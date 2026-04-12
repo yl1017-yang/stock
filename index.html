@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주식 테마 & 수익성 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0e14;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --accent-color: #00f2ff;
+            --text-color: #e0e0e0;
+            --success-color: #00ff88;
+            --fail-color: #ff4d4d;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00f2ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .update-time {
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .theme-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.1);
+        }
+
+        .theme-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .theme-name {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .profit-status {
+            font-weight: 600;
+        }
+
+        .status-pass { color: var(--success-color); }
+        .status-fail { color: var(--fail-color); }
+        .status-skip { opacity: 0.5; }
+
+        footer {
+            margin-top: 50px;
+            opacity: 0.4;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stock Theme Analyzer</h1>
+        <div class="update-time">마지막 업데이트: <span id="update-time-val">{{UPDATE_TIME}}</span></div>
+    </header>
+
+    <div class="dashboard-grid" id="dashboard-items">
+        {{CARDS}}
+    </div>
+
+    <footer>
+        &copy; 2026 Stock Analyzer Project. All rights reserved.
+    </footer>
+</body>
+</html>
