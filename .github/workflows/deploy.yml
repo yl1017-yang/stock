@@ -1,6 +1,8 @@
 name: Daily Stock Analysis & Deploy
 
 on:
+  push:
+    branches: [ "main" ]
   schedule:
     # 매일 오후 3시 40분 (KST) 실행 (UTC 기준 06:40)
     - cron: '40 6 * * *'

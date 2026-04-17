@@ -110,6 +110,22 @@ def main():
     
     results = []
     
+    # 투자지표(PER, PBR 등) 수집 (1단계: 전체 벌크 수집)
+    print("시장 투자지표 수집 중...")
+    fund_df = pd.DataFrame()
+    last_business_day = datetime.now().strftime('%Y%m%d')
+    for i in range(7):
+        search_date = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
+        try:
+            temp_df = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
+            if not temp_df.empty:
+                fund_df = temp_df
+                last_business_day = search_date
+                print(f"{search_date} 기준 벌크 데이터를 사용합니다.")
+                break
+        except Exception:
+            continue
+
     for _, theme in top_themes.iterrows():
         print(f"[{theme['name']}] 테마 종목 분석 중...")
         stocks_df = get_stocks_in_theme(theme['link'])
@@ -119,11 +135,37 @@ def main():
             if corp_list:
                 is_profitable = check_profitability(corp_list, s['code'])
             
+            # 주가 지표 추출 (2단계 Fallback 로직 포함)
+            per, pbr, dvd = "N/A", "N/A", "N/A"
+            
+            # 1. 벌크 데이터에서 확인
+            if not fund_df.empty and s['code'] in fund_df.index:
+                row = fund_df.loc[s['code']]
+                per = str(row['PER']) if 'PER' in row and row['PER'] != 0 else "N/A"
+                pbr = str(row['PBR']) if 'PBR' in row and row['PBR'] != 0 else "N/A"
+                dvd = str(row['DIV']) if 'DIV' in row and row['DIV'] != 0 else "N/A"
+            
+            # 2. 벌크 데이터에 없거나 N/A인 경우 개별 시도 (안정성 강화)
+            if per == "N/A" or pbr == "N/A":
+                try:
+                    # 개별 종목 지표는 속도가 느릴 수 있으나 정확도가 높음
+                    indiv_df = stock.get_market_fundamental(last_business_day, last_business_day, s['code'])
+                    if not indiv_df.empty:
+                        row = indiv_df.iloc[-1]
+                        per = str(row['PER']) if row['PER'] != 0 else per
+                        pbr = str(row['PBR']) if row['PBR'] != 0 else pbr
+                        dvd = str(row['DIV']) if row['DIV'] != 0 else dvd
+                except Exception:
+                    pass
+
             results.append({
                 'theme': theme['name'],
                 'name': s['name'],
                 'code': s['code'],
                 'volume': s['volume'],
+                'per': per,
+                'pbr': pbr,
+                'dividend': dvd,
                 'is_profitable': is_profitable,
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M')
             })
