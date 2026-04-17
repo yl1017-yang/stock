@@ -132,13 +132,10 @@ def main():
     final_df = pd.DataFrame(results)
     final_df.to_json('data.json', orient='records', force_ascii=False)
     
-    # HTML 생성 로직
-    generate_html(final_df)
-    
     # 카카오톡 알림 전송 (Pass된 종목이 있을 경우 요약 전달)
     send_summary_notification(final_df)
     
-    print("데이터 수집 및 대시보드 생성 완료!")
+    print("데이터 수집 및 분석 완료! (data.json 저장됨)")
 
 def send_summary_notification(df):
     from kakao_api import send_kakao_message
@@ -151,37 +148,6 @@ def send_summary_notification(df):
         send_kakao_message(message)
     else:
         send_kakao_message("오늘 검증을 통과한 수익 종목이 없습니다. 대시보드를 확인해 보세요.")
-
-def generate_html(df):
-    with open('template.html', 'r', encoding='utf-8') as f:
-        template = f.read()
-
-    cards_html = ""
-    themes = df['theme'].unique()
-    
-    for theme in themes:
-        theme_df = df[df['theme'] == theme]
-        card = f'<div class="theme-card"><div class="theme-header"><div class="theme-name">{theme}</div></div>'
-        
-        for _, s in theme_df.iterrows():
-            status_class = "status-skip"
-            if "Pass" in s['is_profitable']: status_class = "status-pass"
-            elif "Fail" in s['is_profitable']: status_class = "status-fail"
-            
-            card += f"""
-            <div class="stock-item">
-                <span>{s['name']}</span>
-                <span class="profit-status {status_class}">{s['is_profitable']}</span>
-            </div>
-            """
-        card += "</div>"
-        cards_html += card
-
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    html = template.replace('{{CARDS}}', cards_html).replace('{{UPDATE_TIME}}', now)
-    
-    with open('index.html', 'w', encoding='utf-8') as f:
-        f.write(html)
 
 if __name__ == "__main__":
     main()

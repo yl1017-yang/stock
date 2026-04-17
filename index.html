@@ -3,24 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주식 테마 & 수익성 대시보드</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Stock Theme Analyzer | Premium Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0a0e14;
-            --card-bg: rgba(255, 255, 255, 0.05);
+            --bg-color: #05080a;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
             --accent-color: #00f2ff;
+            --secondary-color: #7000ff;
             --text-color: #e0e0e0;
+            --text-muted: #888;
             --success-color: #00ff88;
             --fail-color: #ff4d4d;
+            --glass-bg: rgba(10, 14, 20, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
             background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(112, 0, 255, 0.05) 0%, transparent 40%);
             color: var(--text-color);
             font-family: 'Outfit', sans-serif;
             margin: 0;
             padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -28,97 +41,292 @@
 
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease-out;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1px;
             margin-bottom: 10px;
-            background: linear-gradient(90deg, #00f2ff, #0072ff);
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0, 242, 255, 0.2);
         }
 
-        .update-time {
+        .update-info {
             font-size: 0.9rem;
-            opacity: 0.6;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success-color);
+            animation: pulse-animation 2s infinite;
+        }
+
+        /* 컨트롤 영역 */
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-color);
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .filter-btn.active {
+            background: var(--accent-color);
+            color: #000;
+            border-color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        /* 격자 레이아웃 */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
         }
 
         .theme-card {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            animation: cardAppear 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .theme-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+            opacity: 0.5;
         }
 
         .theme-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.1);
+            transform: translateY(-8px);
+            border-color: rgba(0, 242, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .theme-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         .theme-name {
-            font-weight: 600;
-            font-size: 1.2rem;
-            color: var(--accent-color);
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .stock-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .stock-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
             font-size: 0.95rem;
+        }
+
+        .stock-name {
+            font-weight: 400;
         }
 
         .profit-status {
             font-weight: 600;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 6px;
         }
 
-        .status-pass { color: var(--success-color); }
-        .status-fail { color: var(--fail-color); }
-        .status-skip { opacity: 0.5; }
+        .status-pass { background: rgba(0, 255, 136, 0.1); color: var(--success-color); }
+        .status-fail { background: rgba(255, 77, 77, 0.1); color: var(--fail-color); }
+        .status-skip { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
+
+        /* 로딩/에러 메시지 */
+        #loading { margin-top: 100px; font-size: 1.2rem; color: var(--accent-color); }
+        #error { margin-top: 100px; color: var(--fail-color); text-align: center; display: none; }
 
         footer {
-            margin-top: 50px;
-            opacity: 0.4;
-            font-size: 0.8rem;
+            margin-top: 80px;
+            padding: 40px;
+            opacity: 0.5;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        /* 애니메이션 */
+        @keyframes pulse-animation {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         @media (max-width: 600px) {
-            h1 { font-size: 1.8rem; }
+            h1 { font-size: 2rem; }
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <header>
         <h1>Stock Theme Analyzer</h1>
-        <div class="update-time">마지막 업데이트: <span id="update-time-val">{{UPDATE_TIME}}</span></div>
+        <div class="update-info">
+            <div class="pulse"></div>
+            Last Scanned: <span id="update-time-val">-</span>
+        </div>
     </header>
 
-    <div class="dashboard-grid" id="dashboard-items">
-        {{CARDS}}
+    <div class="controls">
+        <button class="filter-btn active" onclick="filterData('All')">전체보기</button>
+        <button class="filter-btn" onclick="filterData('Pass')">수익종목만</button>
     </div>
 
+    <div id="loading">분석 데이터를 불러오는 중...</div>
+    <div id="error">
+        <h3>데이터를 불러올 수 없습니다.</h3>
+        <p>파이썬 프로그램이 먼저 실행되어 'data.json' 파일이 생성되어야 합니다.</p>
+    </div>
+
+    <div class="dashboard-grid" id="dashboard-items"></div>
+
     <footer>
-        &copy; 2026 Stock Analyzer Project. All rights reserved.
+        &copy; 2026 Stock Analyzer Project. All rights reserved.<br>
+        <small>Powered by Python & Modern JavaScript</small>
     </footer>
+
+    <script>
+        let allData = [];
+        let currentFilter = 'All';
+
+        async function init() {
+            try {
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error('Not found');
+                
+                allData = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                
+                if (allData.length > 0) {
+                    document.getElementById('update-time-val').textContent = allData[0].time;
+                    render(allData);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function filterData(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.includes(filter === 'All' ? '전체' : '수익'));
+            });
+
+            if (filter === 'All') {
+                render(allData);
+            } else {
+                // 'Pass' 글자가 포함된 종목만 필터링
+                const filtered = allData.filter(item => item.is_profitable.includes('Pass'));
+                render(filtered);
+            }
+        }
+
+        function render(data) {
+            const container = document.getElementById('dashboard-items');
+            container.innerHTML = '';
+
+            // 테마별 그룹화
+            const themes = [...new Set(data.map(item => item.theme))];
+
+            themes.forEach((themeName, index) => {
+                const themeStocks = data.filter(s => s.theme === themeName);
+                
+                const card = document.createElement('div');
+                card.className = 'theme-card';
+                card.style.animationDelay = `${index * 0.1}s`;
+
+                let stocksHtml = '';
+                themeStocks.forEach(s => {
+                    let statusClass = 'status-skip';
+                    if (s.is_profitable.includes('Pass')) statusClass = 'status-pass';
+                    else if (s.is_profitable.includes('Fail')) statusClass = 'status-fail';
+
+                    stocksHtml += `
+                        <div class="stock-item">
+                            <span class="stock-name">${s.name}</span>
+                            <span class="profit-status ${statusClass}">${s.is_profitable}</span>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="theme-header">
+                        <div class="theme-name">${themeName}</div>
+                    </div>
+                    <div class="stock-list">
+                        ${stocksHtml}
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        init();
+    </script>
 </body>
 </html>
