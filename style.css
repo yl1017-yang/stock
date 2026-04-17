@@ -33,7 +33,7 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 20px;
     animation: fadeInDown 0.8s ease-out;
 }
 
@@ -41,7 +41,7 @@ h1 {
     font-size: 3rem;
     font-weight: 700;
     letter-spacing: -1px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -68,7 +68,7 @@ h1 {
 
 /* 컨트롤 영역 */
 .controls {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     display: flex;
     gap: 10px;
     animation: fadeIn 1s ease-out;
@@ -78,7 +78,7 @@ h1 {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     color: var(--text-color);
-    padding: 8px 20px;
+    padding: 6px 20px;
     border-radius: 20px;
     cursor: pointer;
     font-size: 0.9rem;
@@ -131,26 +131,25 @@ h1 {
 }
 
 .theme-header {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .theme-name {
     font-weight: 700;
     font-size: 1.4rem;
     color: #fff;
-    margin-bottom: 4px;
 }
 
 .stock-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
 }
 
 .stock-item-wrapper {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.06);
     border-radius: 12px;
-    padding: 10px 14px;
+    padding: 8px 14px;
     display: flex;
     flex-direction: column;
     gap: 4px;
