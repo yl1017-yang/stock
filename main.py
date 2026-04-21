@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 import pandas as pd
 import os
 from pykrx import stock
@@ -94,6 +95,51 @@ def check_profitability(corp_list, corp_code):
         print(f"Error checking {corp_code}: {e}")
         return "Error"
 
+# 4. 네이버 금융 수집 (Fallback용)
+def get_naver_financials(code):
+    url = f"https://finance.naver.com/item/main.naver?code={code}"
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        soup = BeautifulSoup(res.text, 'lxml')
+        
+        # PER, PBR, DIV
+        per = soup.select_one('#_per').text.strip() if soup.select_one('#_per') else "N/A"
+        pbr = soup.select_one('#_pbr').text.strip() if soup.select_one('#_pbr') else "N/A"
+        dvd_tag = soup.select_one('#_dvd')
+        dvd = dvd_tag.text.strip() if dvd_tag else "N/A"
+        
+        if per == "N/A":
+            per_label = soup.find('th', string=re.compile('PER'))
+            if per_label:
+                per_val = per_label.find_next_sibling('td')
+                if per_val:
+                    per = per_val.text.strip()
+        
+        # 영업이익 확인 (Fallback)
+        is_profitable = "N/A"
+        table = soup.select_one('.section.cop_analysis table')
+        if table:
+            rows = table.select('tr')
+            for row in rows:
+                th = row.select_one('th')
+                if th and '영업이익' in th.text:
+                    tds = row.select('td')
+                    if tds and len(tds) > 3:
+                        latest_op = tds[3].text.strip().replace(',', '')
+                        if latest_op and latest_op != '-':
+                            try:
+                                val = float(latest_op)
+                                is_profitable = "Pass (흑자)" if val > 0 else "Fail (적자)"
+                            except ValueError:
+                                pass
+                        break
+        
+        return per, pbr, dvd, is_profitable
+    except Exception as e:
+        print(f"Error scraping {code}: {e}")
+        return "N/A", "N/A", "N/A", "Error"
+
 def main():
     # DART 설정
     dart_api_key = os.getenv('DART_API_KEY')
@@ -157,6 +203,15 @@ def main():
                         dvd = str(row['DIV']) if row['DIV'] != 0 else dvd
                 except Exception:
                     pass
+
+            # 3. 데이터가 여전히 없거나 API 사용이 불가능한 경우 Naver Scraping 사용 (마지막 수단)
+            if per == "N/A" or is_profitable in ["Skipped", "N/A", "Unknown", "Error"]:
+                n_per, n_pbr, n_dvd, n_profit = get_naver_financials(s['code'])
+                if per == "N/A": per = n_per
+                if pbr == "N/A": pbr = n_pbr
+                if dvd == "N/A": dvd = n_dvd
+                if is_profitable in ["Skipped", "N/A", "Unknown", "Error"] and n_profit != "N/A":
+                    is_profitable = n_profit
 
             results.append({
                 'theme': theme['name'],
