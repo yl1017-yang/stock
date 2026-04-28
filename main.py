@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import os
+import time
 from pykrx import stock
 import dart_fss as dart
 from datetime import datetime, timedelta
@@ -66,7 +67,7 @@ def get_stocks_in_theme(theme_link):
     df = pd.DataFrame(stocks)
     return df.sort_values(by='volume', ascending=False).head(10) if not df.empty else df
 
-# 3. 수익성 검증 (영업이익 체크)
+# 3. 수익성 검증 (영업이익 체크) - 기존 DART
 def check_profitability(corp_list, corp_code):
     try:
         # DART에서 법인 찾기
@@ -83,8 +84,6 @@ def check_profitability(corp_list, corp_code):
         op_row = df[df['account_nm'].str.contains('영업이익|영업손실', na=False)]
         
         if not op_row.empty:
-            # 가장 최신 컬럼(보통 첫 번째 데이터 컬럼)의 값 확인
-            # 데이터 컬럼은 보통 '2023', '2024' 등 연도 형태
             val = op_row.iloc[0, 2] # 0: account_nm, 1: concept_id, 2: latest_data
             if val > 0:
                 return "Pass (흑자)"
@@ -140,6 +139,168 @@ def get_naver_financials(code):
         print(f"Error scraping {code}: {e}")
         return "N/A", "N/A", "N/A", "Error"
 
+
+# =============== [가치투자(저평가 턴어라운드) 신규 로직] ===============
+
+def check_operating_profit_upward(code):
+    """
+    네이버 금융 스크래핑으로 최근 분기/연간 영업이익이 전반적으로 우상향(또는 흑자 전환 후 유지)인지 확인.
+    """
+    url = f"https://finance.naver.com/item/main.naver?code={code}"
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        soup = BeautifulSoup(res.text, 'lxml')
+        table = soup.select_one('.section.cop_analysis table')
+        
+        if table:
+            rows = table.select('tr')
+            for row in rows:
+                th = row.select_one('th')
+                if th and '영업이익' in th.text:
+                    tds = row.select('td')
+                    profits = []
+                    # 최근 3~4개년/분기 데이터 수집
+                    for td in tds:
+                        val = td.text.strip().replace(',', '')
+                        try:
+                            profits.append(float(val))
+                        except ValueError:
+                            pass
+                    
+                    if len(profits) >= 3:
+                        # 뒷부분이 최근 데이터 (분기 데이터의 최근 3개 기준)
+                        recent_3 = profits[-3:]
+                        # 최근 3번의 실적 중 적어도 마지막 실적이 이전보다 양호하면 긍정적으로 판단 (단순 로직)
+                        if recent_3[-1] > 0 and recent_3[-1] >= recent_3[-2]:
+                            return True
+        return False
+    except Exception:
+        return False
+
+def check_ma_turnaround(code):
+    """
+    최근 120영업일 OHLCV 데이터를 통해 
+    이동평균선 (5, 20, 60, 120일) 이 역배열에서 정배열로 전환 추세인지 확인.
+    """
+    end_date = datetime.today()
+    start_date = end_date - timedelta(days=200) # 영업일 기준 120일을 넉넉히 가져옴
+    
+    try:
+        # 일별 종가 데이터 (수정주가는 안됨)
+        # 시간 단축을 위해 KOSPI/KOSDAQ 상관없이 ticker 기반 직접 조회
+        ohlcv = stock.get_market_ohlcv(start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d"), code)
+        if len(ohlcv) < 120:
+            return False, 0
+            
+        df = ohlcv[['종가']].copy()
+        df['MA5'] = df['종가'].rolling(window=5).mean()
+        df['MA20'] = df['종가'].rolling(window=20).mean()
+        df['MA60'] = df['종가'].rolling(window=60).mean()
+        df['MA120'] = df['종가'].rolling(window=120).mean()
+        
+        # 결측치 제거
+        df = df.dropna()
+        if len(df) < 10:
+            return False, 0
+            
+        recent = df.iloc[-1]
+        past_60_days = df.iloc[-60] # 약 3개월 전
+        
+        # 3개월 전에는 장기 이평선이 위에 있거나(역배열 성향), 
+        # 최근에는 정배열(5 > 20 > 60 > 120)로 진입했는지 체크
+        
+        # 1) 현재가 정배열 성향 (완벽하지 않아도 단기가 중기를 뚫음)
+        current_trend_good = (recent['MA5'] > recent['MA60']) and (recent['MA20'] > recent['MA120'])
+        
+        # 2) 과거에는 역배열 (120 > 60 > 20)
+        past_trend_bad = (past_60_days['MA120'] > past_60_days['MA60']) or (past_60_days['MA60'] > past_60_days['MA20'])
+        
+        if current_trend_good and past_trend_bad:
+            # 거래량도 대략 리턴
+            return True, ohlcv.iloc[-1]['거래량']
+            
+        return False, ohlcv.iloc[-1]['거래량']
+    except Exception as e:
+        print(f"MA Check Error {code}: {e}")
+        return False, 0
+
+def find_undervalued_turnaround_stocks(fund_df, cap_df):
+    """
+    1차 필터링: PER, PBR, DIV, Market Cap
+    2차 필터링: MA 턴어라운드 및 영업이익.
+    """
+    print("\n--- [저평가 턴어라운드(1차 필터링)] ---")
+    
+    # 1. PER, PBR, Market Cap 조건 필터링
+    # cap_df에는 시가총액(상장시가총액) 필드가 있음. fund_df에는 PER, PBR 필드 존재.
+    valid_stocks = []
+    
+    # 두 DataFrame 합치기 (인덱스가 code)
+    if fund_df.empty or cap_df.empty:
+        print("벌크 데이터가 없어 저평가 검색을 건너뜁니다.")
+        return []
+        
+    merged_df = fund_df.join(cap_df)
+    
+    # 1차 필터 (예: 시총 1000억 이상, PER 0~15, PBR 0~1.5)
+    # pykrx의 시가총액은 단위가 '원'입니다. 1,000억 = 100,000,000,000
+    cond = (
+        (merged_df['상장시가총액'] >= 100000000000) &
+        (merged_df['PER'] > 0) & (merged_df['PER'] < 15) &
+        (merged_df['PBR'] > 0) & (merged_df['PBR'] < 1.5)
+    )
+    
+    filtered_df = merged_df[cond]
+    print(f"1차 기본 재무 필터 통과 종목 수: {len(filtered_df)}")
+    
+    # 속도를 위해 시가총액/PER 등 점수를 매겨 상위 50~100개만 2차 분석
+    # 저평가 매력이 높은(PER 낮은 순)으로 정렬
+    sorted_filtered = filtered_df.sort_values(by='PER').head(60)
+    
+    results = []
+    print("\n--- [저평가 턴어라운드(2차 필터링 - 심층 분석)] ---")
+    for code, row in sorted_filtered.iterrows():
+        try:
+            name = stock.get_market_ticker_name(code)
+            
+            # MA 턴어라운드 체크
+            is_turnaround, volume = check_ma_turnaround(code)
+            if not is_turnaround:
+                continue
+                
+            # 영업이익 우상향 체크 (DART보다 가벼운 네이버 기반)
+            is_profit_up = check_operating_profit_upward(code)
+            if not is_profit_up:
+                continue
+                
+            # 통과된 종목
+            results.append({
+                'theme': '가치투자(저평가 턴어라운드)',
+                'name': name,
+                'code': code,
+                'volume': int(volume),
+                'per': str(row['PER']),
+                'pbr': str(row['PBR']),
+                'dividend': str(row['DIV']) if 'DIV' in row and row['DIV'] != 0 else "N/A",
+                'is_profitable': "Pass (흑자상승)",
+                'time': datetime.now().strftime('%Y-%m-%d %H:%M')
+            })
+            
+            print(f"💡 통과: {name} ({code}) - PER: {row['PER']}, PBR: {row['PBR']}")
+            
+            # 최종 10개까지만 모이면 종료
+            if len(results) >= 10:
+                break
+                
+            time.sleep(0.5) # API 과부하 방지
+        except Exception as e:
+            continue
+            
+    return results
+
+# =========================================================================================
+
 def main():
     # DART 설정
     dart_api_key = os.getenv('DART_API_KEY')
@@ -156,21 +317,29 @@ def main():
     
     results = []
     
-    # 투자지표(PER, PBR 등) 수집 (1단계: 전체 벌크 수집)
+    # 투자지표(PER, PBR 등) 및 시가총액 수집 (1단계: 전체 벌크 수집)
     print("시장 투자지표 수집 중...")
     fund_df = pd.DataFrame()
+    cap_df = pd.DataFrame()
+    
     last_business_day = datetime.now().strftime('%Y%m%d')
     for i in range(7):
         search_date = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
         try:
-            temp_df = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
-            if not temp_df.empty:
-                fund_df = temp_df
+            temp_fund = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
+            temp_cap = stock.get_market_cap_by_ticker(search_date, market="ALL")
+            if not temp_fund.empty and not temp_cap.empty:
+                fund_df = temp_fund
+                cap_df = temp_cap
                 last_business_day = search_date
                 print(f"{search_date} 기준 벌크 데이터를 사용합니다.")
                 break
         except Exception:
             continue
+
+    # [신규 추가] 저평가 턴어라운드 종목 검색
+    undervalued_stocks = find_undervalued_turnaround_stocks(fund_df, cap_df)
+    results.extend(undervalued_stocks)
 
     for _, theme in top_themes.iterrows():
         print(f"[{theme['name']}] 테마 종목 분석 중...")
@@ -241,7 +410,7 @@ def send_summary_notification(df):
     if not pass_stocks.empty:
         count = len(pass_stocks)
         top_3 = ", ".join(pass_stocks['name'].head(3).tolist())
-        message = f"🚀 [오늘의 급등 테마 수익 종목]\n총 {count}개 종목 검증 통과!\n주요 종목: {top_3} 등\n\n자세한 내용은 대시보드에서 확인하세요."
+        message = f"🚀 [오늘의 급등 테마 & 가치투자 수익 종목]\n총 {count}개 종목 검증 통과!\n주요 종목: {top_3} 등\n\n자세한 내용은 대시보드에서 확인하세요."
         send_kakao_message(message)
     else:
         send_kakao_message("오늘 검증을 통과한 수익 종목이 없습니다. 대시보드를 확인해 보세요.")

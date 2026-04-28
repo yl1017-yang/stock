@@ -23,14 +23,21 @@ async function init() {
 function filterData(filter) {
     currentFilter = filter;
     document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.includes(filter === 'All' ? '전체' : '수익'));
+        let keyword = '전체';
+        if (filter === 'Pass') keyword = '수익';
+        if (filter === 'Value') keyword = '가치';
+        btn.classList.toggle('active', btn.textContent.includes(keyword));
     });
 
     if (filter === 'All') {
         render(allData);
-    } else {
-        // 'Pass' 글자가 포함된 종목만 필터링
-        const filtered = allData.filter(item => item.is_profitable.includes('Pass'));
+    } else if (filter === 'Pass') {
+        // 'Pass' 글자가 포함된 종목만 필터링 (가치투자 테마 제외)
+        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && item.theme !== '가치투자(저평가 턴어라운드)');
+        render(filtered);
+    } else if (filter === 'Value') {
+        // '가치투자' 테마 종목만 필터링
+        const filtered = allData.filter(item => item.theme === '가치투자(저평가 턴어라운드)');
         render(filtered);
     }
 }
@@ -38,6 +45,11 @@ function filterData(filter) {
 function render(data) {
     const container = document.getElementById('dashboard-items');
     container.innerHTML = '';
+
+    if (data.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #888; padding: 2rem; font-size: 1.2rem; grid-column: 1 / -1;">해당 조건에 맞는 종목이 없습니다.<br><small style="font-size: 0.9rem; color: #555;">(현재 데이터가 없거나, 거래소 데이터 수집이 잠시 차단되었을 수 있습니다.)</small></div>';
+        return;
+    }
 
     // 테마별 그룹화
     const themes = [...new Set(data.map(item => item.theme))];

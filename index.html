@@ -11,7 +11,7 @@
 </head>
 <body>
     <header>
-        <h1>Stock Theme Analyzer</h1>
+        <h1>YANG Stock Analyzer</h1>
         <div class="update-info">
             <div class="pulse"></div>
             Last Scanned: <span id="update-time-val">-</span>
@@ -21,6 +21,7 @@
     <div class="controls">
         <button class="filter-btn active" onclick="filterData('All')">전체보기</button>
         <button class="filter-btn" onclick="filterData('Pass')">수익종목만</button>
+        <button class="filter-btn" onclick="filterData('Value')">저평가 가치투자</button>
     </div>
 
     <div id="loading">분석 데이터를 불러오는 중...</div>
