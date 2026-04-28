@@ -26,6 +26,7 @@ function filterData(filter) {
         let keyword = '전체';
         if (filter === 'Pass') keyword = '수익';
         if (filter === 'Value') keyword = '가치';
+        if (filter === 'US') keyword = '미국';
         btn.classList.toggle('active', btn.textContent.includes(keyword));
     });
 
@@ -33,11 +34,15 @@ function filterData(filter) {
         render(allData);
     } else if (filter === 'Pass') {
         // 'Pass' 글자가 포함된 종목만 필터링 (가치투자 테마 제외)
-        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && item.theme !== '가치투자(저평가 턴어라운드)');
+        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && item.theme !== '가치투자(저평가 턴어라운드)' && !item.theme.includes('턴어라운드)'));
         render(filtered);
     } else if (filter === 'Value') {
         // '가치투자' 테마 종목만 필터링
         const filtered = allData.filter(item => item.theme === '가치투자(저평가 턴어라운드)');
+        render(filtered);
+    } else if (filter === 'US') {
+        // 미국 주식 테마(S&P 500, NASDAQ) 종목 필터링
+        const filtered = allData.filter(item => item.theme === 'S&P 500 (턴어라운드)' || item.theme === 'NASDAQ 100 (턴어라운드)');
         render(filtered);
     }
 }

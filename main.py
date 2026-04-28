@@ -8,6 +8,7 @@ from pykrx import stock
 import dart_fss as dart
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import yfinance as yf
 
 load_dotenv()
 
@@ -299,7 +300,113 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df):
             
     return results
 
-# =========================================================================================
+def scan_us_tickers(tickers, theme_name, limit=10):
+    results = []
+    for t in tickers:
+        ticker_str = t.replace('.', '-')
+        try:
+            ticker = yf.Ticker(ticker_str)
+            info = ticker.info
+            
+            pe = info.get('trailingPE')
+            pb = info.get('priceToBook')
+            
+            if pe is None or pb is None or pe <= 0 or pb <= 0: continue
+            if pe >= 20 or pb >= 3: continue
+            
+            hist = ticker.history(period="6mo")
+            if len(hist) < 120: continue
+            
+            df = hist[['Close']].copy()
+            df['MA5'] = df['Close'].rolling(window=5).mean()
+            df['MA20'] = df['Close'].rolling(window=20).mean()
+            df['MA60'] = df['Close'].rolling(window=60).mean()
+            df['MA120'] = df['Close'].rolling(window=120).mean()
+            df = df.dropna()
+            if len(df) < 10: continue
+            
+            recent = df.iloc[-1]
+            past_60 = df.iloc[-60]
+            
+            current_trend_good = (recent['MA5'] > recent['MA60']) and (recent['MA20'] > recent['MA120'])
+            past_trend_bad = (past_60['MA120'] > past_60['MA60']) or (past_60['MA60'] > past_60['MA20'])
+            
+            if not (current_trend_good and past_trend_bad):
+                continue
+                
+            q_fin = ticker.quarterly_financials
+            if q_fin is None or q_fin.empty:
+                continue
+                
+            if 'Operating Income' in q_fin.index:
+                op_income = q_fin.loc['Operating Income'].dropna().tolist()
+                if len(op_income) >= 3:
+                    if op_income[0] <= 0 or op_income[0] < op_income[1]: 
+                        continue
+            else:
+                continue
+
+            results.append({
+                'theme': theme_name,
+                'name': info.get('shortName', ticker_str),
+                'code': ticker_str,
+                'volume': int(hist.iloc[-1]['Volume']),
+                'per': f"{pe:.2f}",
+                'pbr': f"{pb:.2f}",
+                'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
+                'is_profitable': "Pass (흑자상승)",
+                'time': datetime.now().strftime('%Y-%m-%d %H:%M')
+            })
+            print(f"🇺🇸 통과: {ticker_str} (PE: {pe:.2f}, PB: {pb:.2f})")
+            
+            if len(results) >= limit: break
+            time.sleep(0.1)
+        except Exception as e:
+            continue
+            
+    return results
+
+def find_us_turnaround_stocks():
+    print("\n--- [미국 저평가 턴어라운드 검증 (S&P 500 + NASDAQ 100)] ---")
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    import io
+    
+    sp500_tickers = []
+    ndx_tickers = []
+    
+    try:
+        res = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', headers=headers)
+        sp500 = pd.read_html(io.StringIO(res.text))[0]
+        sp500_tickers = sp500['Symbol'].tolist()[:300]
+    except Exception as e:
+        print(f"S&P 500 리스트 조회 실패: {e}")
+
+    try:
+        res_ndx = requests.get('https://en.wikipedia.org/wiki/Nasdaq-100', headers=headers)
+        tables = pd.read_html(io.StringIO(res_ndx.text))
+        for t in tables:
+            if 'Ticker' in t.columns:
+                ndx_tickers = t['Ticker'].tolist()
+                break
+            elif 'Symbol' in t.columns:
+                ndx_tickers = t['Symbol'].tolist()
+                break
+    except Exception as e:
+        print(f"NASDAQ 100 리스트 조회 실패: {e}")
+
+    results = []
+    
+    if sp500_tickers:
+        print("\nS&P 500 스캔 시작...")
+        results.extend(scan_us_tickers(sp500_tickers, 'S&P 500 (턴어라운드)', 10))
+        
+    if ndx_tickers:
+        print("\nNASDAQ 100 스캔 시작...")
+        existing_codes = [r['code'] for r in results]
+        ndx_tickers = [t for t in ndx_tickers if t.replace('.', '-') not in existing_codes]
+        results.extend(scan_us_tickers(ndx_tickers, 'NASDAQ 100 (턴어라운드)', 10))
+        
+    return results
 
 def main():
     # DART 설정
@@ -340,6 +447,10 @@ def main():
     # [신규 추가] 저평가 턴어라운드 종목 검색
     undervalued_stocks = find_undervalued_turnaround_stocks(fund_df, cap_df)
     results.extend(undervalued_stocks)
+
+    # [신규 추가] 미국 저평가 턴어라운드 종목 검색
+    us_undervalued_stocks = find_us_turnaround_stocks()
+    results.extend(us_undervalued_stocks)
 
     for _, theme in top_themes.iterrows():
         print(f"[{theme['name']}] 테마 종목 분석 중...")

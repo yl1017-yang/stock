@@ -5,3 +5,4 @@ pykrx
 dart-fss
 lxml
 python-dotenv
+yfinance
