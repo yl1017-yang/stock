@@ -5,7 +5,9 @@
 ---
 
 ## 1. 프로젝트 개요 (Core Concept)
+
 본 프로젝트는 **"오늘의 핫 테마 종목 분석 및 수익성 검증 자동화"**를 목표로 합니다.
+
 - **Data First**: 모든 데이터는 파이썬이 객관적으로 수집 및 분석합니다.
 - **Premium UI**: 분석된 결과는 사용자에게 '프리미엄' 감성의 현대적인 대시보드로 제공됩니다.
 - **Separation of Concerns**: 데이터 분석 엔진(Python)과 UI 렌더링 엔진(JS)은 완전히 독립되어 동작합니다.
@@ -13,39 +15,43 @@
 ---
 
 ## 2. 시스템 아키텍처 및 역할
+
 프로젝트는 **데이터 엔진**과 **UI 엔진**으로 이원화되어 있습니다.
 
 ### 2.1 🐍 데이터 엔진 (Python / `main.py`)
+
 - **수집 파이프라인 (2-Track)**:
   1. **단기 급등 테마주 추적**: 네이버 금융 테마 및 종목 수집 + `pykrx`를 통한 실시간 투자 지표 수집.
-  2. **[NEW] 한국 저평가 가치투자(턴어라운드) 발굴**: 
+  2. **[NEW] 한국 저평가 가치투자(턴어라운드) 발굴**:
      - **1차 필터링(경량화)**: `pykrx` 벌크 데이터로 전체 시장을 1초 만에 스캔하여 '시가총액 1천억 이상 & 저 PER/PBR' 후보군 압축.
      - **2차 필터링(정밀검증)**: 압축된 후보군에 한하여 120영업일 MA(이동평균선) 턴어라운드 여부 및 네이버/DART 영업이익 우상향 검증.
-     - *전체 시장 스캔 시 서버 차단을 피하기 위한 스마트 2단계 필터링 기법(Lightweight Strategy)이 적용되어 있습니다.*
+     - _전체 시장 스캔 시 서버 차단을 피하기 위한 스마트 2단계 필터링 기법(Lightweight Strategy)이 적용되어 있습니다._
   3. **[NEW] 미국 주식 가치투자(턴어라운드) 발굴 (S&P 500 + NASDAQ 100)**:
      - **방식**: `yfinance` 라이브러리를 사용하여 미국 시장 대표 지수인 **S&P 500 상위 종목** 및 **나스닥(NASDAQ) 100 종목**을 각각 스캔. 중복 종목을 배제하고 두 시장을 분리하여 각각 최대 10종목씩 추출.
      - **조건**: PER < 20, PBR < 3 이면서 동시에 최근 120일 역배열에서 정배열로 턴어라운드한 실적 우상향 기업 필터링.
      - **UI 렌더링**: 대시보드의 '미국 우량주' 탭 선택 시, 상단에는 `S&P 500`, 하단에는 `NASDAQ 100` 종목 그룹이 위아래로 나뉘어 보기 좋게 표시됩니다.
-     - *야후 파이낸스의 글로벌 API를 이용하므로 국내 IP 차단 위험 없이 빠르고 안정적으로 동작합니다.*
+     - _야후 파이낸스의 글로벌 API를 이용하므로 국내 IP 차단 위험 없이 빠르고 안정적으로 동작합니다._
 - **투자 지표/수익성 검증**:
   - Open DART API 및 네이버 재무제표 스크래핑을 혼용하여 지표 수집(Fallback 로직 내장).
 - **출력**: 분석 결과를 `data.json` 파일로 생성.
 - **알림**: 분석 완료 시 카카오톡 알림 메시지 전송 (`kakao_api.py`).
 
 ### 2.2 🌐 UI 엔진 (JavaScript / `index.html`)
+
 - **역할**: `data.json` 데이터 로드, 테마별 그룹화, 프리미엄 UI 렌더링.
 - **기능**:
   - 각 테마 내 종목 **순위(#1, #2...)** 자동 부여 및 표시.
   - 필터 탭 제공: **[전체보기], [수익종목만], [저평가 가치투자]** 탭 지원 (해당 탭 선택 시 조건에 맞는 종목만 렌더링).
   - 종목별 **투자 지표(PER, PBR, DIV)** 하단 바 렌더링.
-- **핵심 파일**: 
-  - [index.html](file:///e:/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EB%AA%A8%EC%9D%8C/00_git/stock/index.html): 메인 구조
-  - [style.css](file:///e:/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EB%AA%A8%EC%9D%8C/00_git/stock/style.css): 프리미엄 디자인 스타일
-  - [script.js](file:///e:/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EB%AA%A8%EC%9D%8C/00_git/stock/script.js): 동적 렌더링 로직
+- **핵심 파일**:
+  - [index.html](/stock/index.html): 메인 구조
+  - [style.css](/stock/style.css): 프리미엄 디자인 스타일
+  - [script.js](/stock/script.js): 동적 렌더링 로직
 
 ---
 
 ## 3. 데이터 스키마 (data.json)
+
 `main.py`가 생성하고 `index.html`이 소비하는 데이터 표준 형식입니다.
 
 ```json
@@ -67,23 +73,26 @@
 ---
 
 ## 4. 환경 설정 (Configuration)
+
 프로젝트 작동을 위해 아래의 환경 변수(Secrets)가 필요합니다.
 
-| 변수명 | 설명 | 비고 |
-| :--- | :--- | :--- |
-| `DART_API_KEY` | Open DART 공시 데이터 조회용 | 없을 시 수익성 체크 생략 |
-| `KAKAO_REST_API_KEY` | 카카오 알림톡 전송용 | |
-| `KAKAO_REFRESH_TOKEN` | 카카오 API 권한 유지용 | |
+| 변수명                | 설명                         | 비고                     |
+| :-------------------- | :--------------------------- | :----------------------- |
+| `DART_API_KEY`        | Open DART 공시 데이터 조회용 | 없을 시 수익성 체크 생략 |
+| `KAKAO_REST_API_KEY`  | 카카오 알림톡 전송용         |                          |
+| `KAKAO_REFRESH_TOKEN` | 카카오 API 권한 유지용       |                          |
 
 ---
 
 ## 5. 개발 및 수정 가이드 (AI 지침)
 
 ### ⚠️ 변경 금지 원칙
+
 1.  **하드코딩 금지**: `index.html`에 종목 데이터를 직접 입력하지 마십시오. 모든 데이터는 `data.json`을 통해야 합니다.
 2.  **구조 유지**: `main.py`는 데이터 생성 및 저장에만 집중해야 하며, HTML 태그를 생성하지 마십시오.
 
 ### ✅ 확장 및 고도화 가이드
+
 - **데이터 엔진 확장 시**: `main.py`의 `results` 리스트에 새로운 필드를 추가하면 `data.json`에 자동 포함됩니다.
 - **UI 개선 시**: `index.html`의 CSS 변수를 활용하십시오. 시각적으로 'Premium'하고 'Alive'한 느낌을 주기 위해 미세 애니메이션 적용을 권장합니다.
 - **로컬 테스트**: `python main.py` 실행 후 `python -m http.server`를 통해 데이터를 확인하십시오.
@@ -91,8 +100,21 @@
 ---
 
 ## 6. 로컬 실행 및 배포
-- **로컬 실행**:
-  1. `pip install -r requirements.txt`
-  2. `python main.py` (data.json 생성됨)
-  3. `python -m http.server` 실행 후 `localhost:8000` 접속
-- **배포**: GitHub Actions가 `main.py` 실행 후 최신 데이터를 포함한 정적 파일들을 GitHub Pages로 자동 배포합니다.
+
+### 6.1 사전 준비 (Python 설치)
+
+데이터 엔진(`main.py`)을 실행하려면 파이썬 설치가 필요합니다. (프론트엔드 UI 디자인 및 기능 수정만 할 경우에는 설치하지 않아도 됩니다.)
+
+1. [Python 공식 다운로드](https://www.python.org/downloads/)에서 **Python 3.11 또는 3.12** 버전을 다운로드합니다.
+2. 설치 마법사 첫 화면 하단의 **`Add python.exe to PATH`** 체크박스를 반드시 체크한 후 설치하십시오. (체크하지 않으면 명령어가 동작하지 않습니다.)
+3. python --version 확인
+
+### 6.2 로컬 실행
+
+1. `pip install -r requirements.txt` 또는 `python -m pip install -r requirements.txt`
+2. `python main.py` (`data.json` 데이터가 생성됨)
+3. `python -m http.server` 실행 후 `localhost:8000` 접속
+
+### 6.3 배포
+
+- GitHub Actions가 주기적으로 `main.py`를 자동 실행하여 최신 데이터가 포함된 `data.json`과 함께 GitHub Pages로 정적 배포를 수행합니다.

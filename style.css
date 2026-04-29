@@ -70,7 +70,7 @@ h1 {
 .controls {
     margin-bottom: 20px;
     display: flex;
-    gap: 10px;
+    gap: 4px;
     animation: fadeIn 1s ease-out;
 }
 
@@ -78,7 +78,7 @@ h1 {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     color: var(--text-color);
-    padding: 6px 20px;
+    padding: 6px 10px;
     border-radius: 20px;
     cursor: pointer;
     font-size: 0.9rem;
