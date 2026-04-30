@@ -285,6 +285,31 @@ def check_ma_turnaround(code, is_us=False):
     except Exception:
         return False, 0
 
+def get_1m_return(code, is_us=False):
+    """
+    최근 1개월(약 20영업일) 수익률을 계산합니다.
+    """
+    try:
+        if is_us:
+            ticker = yf.Ticker(code)
+            hist = ticker.history(period="2mo")
+            if len(hist) < 20: return "N/A"
+            current = hist['Close'].iloc[-1]
+            past = hist['Close'].iloc[-20]
+            change = (current / past - 1) * 100
+            return f"{change:+.2f}%"
+        else:
+            end_date = datetime.now().strftime("%Y%m%d")
+            start_date = (datetime.now() - timedelta(days=45)).strftime("%Y%m%d")
+            df = stock.get_market_ohlcv(start_date, end_date, code)
+            if len(df) < 10: return "N/A"
+            current = df['종가'].iloc[-1]
+            past = df['종가'].iloc[0]
+            change = (current / past - 1) * 100
+            return f"{change:+.2f}%"
+    except:
+        return "N/A"
+
 def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
     """
     성장 테마군 내에서 저평가된 턴어라운드 종목을 발굴합니다.
@@ -335,6 +360,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             'name': name,
             'code': code,
             'volume': int(volume),
+            'change_1m': get_1m_return(code),
             'per': str(per),
             'pbr': str(pbr),
             'dividend': str(row['DIV']) if row['DIV'] != 0 else "N/A",
@@ -392,6 +418,7 @@ def scan_us_tickers(tickers, theme_name, leading_sectors, limit=5):
                 'name': info.get('shortName', ticker_str),
                 'code': ticker_str,
                 'volume': int(volume),
+                'change_1m': get_1m_return(ticker_str, is_us=True),
                 'per': f"{pe:.2f}",
                 'pbr': f"{pb:.2f}",
                 'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
@@ -529,6 +556,7 @@ def main():
                 'name': s['name'],
                 'code': s['code'],
                 'volume': s['volume'],
+                'change_1m': get_1m_return(s['code']),
                 'per': per,
                 'pbr': pbr,
                 'dividend': dvd,

@@ -78,10 +78,15 @@ function render(data) {
             if (s.is_profitable.includes('Pass')) statusClass = 'status-pass';
             else if (s.is_profitable.includes('Fail')) statusClass = 'status-fail';
 
+            const isUp = s.change_1m && s.change_1m.includes('+');
+            const isDown = s.change_1m && s.change_1m.includes('-');
+            const changeClass = isUp ? 'up' : (isDown ? 'down' : '');
+            const changeHtml = s.change_1m ? `<span class="change-val ${changeClass}">${s.change_1m}</span>` : '';
+
             stocksHtml += `
                 <div class="stock-item-wrapper">
                     <div class="stock-item">
-                        <span class="stock-name"><span class="rank">#${idx + 1}</span> ${s.name}</span>
+                        <span class="stock-name"><span class="rank">#${idx + 1}</span> ${s.name} ${changeHtml}</span>
                         <span class="profit-status ${statusClass}">${s.is_profitable}</span>
                     </div>
                     <div class="stock-indicators">
