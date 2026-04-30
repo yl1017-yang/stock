@@ -23,26 +23,32 @@ async function init() {
 function filterData(filter) {
     currentFilter = filter;
     document.querySelectorAll('.filter-btn').forEach(btn => {
-        let keyword = '전체';
+        let keyword = '국내테마';
         if (filter === 'Pass') keyword = '수익';
-        if (filter === 'Value') keyword = '가치';
-        if (filter === 'US') keyword = '미국';
-        btn.classList.toggle('active', btn.textContent.includes(keyword));
+        if (filter === 'Value') keyword = '국내 저평가';
+        if (filter === 'US') keyword = '미국 저평가';
+        btn.classList.toggle('active', btn.textContent.trim() === keyword);
     });
 
     if (filter === 'All') {
-        render(allData);
+        // 국내 저평가 및 미국 저평가 테마를 제외한 일반 국내 테마만 표시
+        const filtered = allData.filter(item => 
+            !item.theme.startsWith('국내 저평가') && 
+            !item.theme.startsWith('미국 저평가') &&
+            item.theme !== '가치투자(저평가 턴어라운드)'
+        );
+        render(filtered);
     } else if (filter === 'Pass') {
         // 'Pass' 글자가 포함된 종목만 필터링 (가치투자 테마 제외)
-        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && item.theme !== '가치투자(저평가 턴어라운드)' && !item.theme.includes('턴어라운드)'));
+        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && !item.theme.startsWith('국내 저평가') && !item.theme.includes('턴어라운드)'));
         render(filtered);
     } else if (filter === 'Value') {
-        // '가치투자' 테마 종목만 필터링
-        const filtered = allData.filter(item => item.theme === '가치투자(저평가 턴어라운드)');
+        // '국내 저평가'로 시작하는 모든 테마 필터링
+        const filtered = allData.filter(item => item.theme.startsWith('국내 저평가'));
         render(filtered);
     } else if (filter === 'US') {
-        // 미국 주식 테마(S&P 500, NASDAQ) 종목 필터링
-        const filtered = allData.filter(item => item.theme === 'S&P 500 (턴어라운드)' || item.theme === 'NASDAQ 100 (턴어라운드)');
+        // '미국 저평가'로 시작하는 모든 테마 필터링
+        const filtered = allData.filter(item => item.theme.startsWith('미국 저평가'));
         render(filtered);
     }
 }

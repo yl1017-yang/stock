@@ -13,6 +13,14 @@ import yfinance as yf
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+import ssl
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
 # Global SSL verification disable for requests (fixes pykrx/yfinance in corporate networks)
 old_merge_environment_settings = requests.Session.merge_environment_settings
 def new_merge_environment_settings(self, url, proxies, stream, verify, cert):
@@ -22,36 +30,80 @@ def new_merge_environment_settings(self, url, proxies, stream, verify, cert):
 requests.Session.merge_environment_settings = new_merge_environment_settings
 
 load_dotenv()
+import io
 
-# 1. 네이버 금융 테마 수집
-def get_naver_themes():
-    print("네이버 금융 테마 수집 중...")
+# =================================================================
+# [설정] 미래 성장 섹터 자동 탐지를 위한 키워드 그룹
+# =================================================================
+CORE_GROWTH_KEYWORDS = ['AI', '인공지능', '로봇', '반도체', '배터리', '2차전지', '바이오', '우주', '항공', '방산', '에너지', '자율주행', '양자', '플랫폼', '혁신']
+OLD_ECONOMY_KEYWORDS = ['음식료', '섬유', '의복', '종이', '목재', '건설', '유통', '시멘트', '가구']
+
+# 미국 주요 섹터 ETF (GICS 기준)
+US_SECTOR_ETFS = {
+    'XLK': 'Technology',
+    'XLV': 'Healthcare',
+    'XLC': 'Communication Services',
+    'XLY': 'Consumer Discretionary',
+    'XLF': 'Financials',
+    'XLI': 'Industrials',
+    'XLP': 'Consumer Staples',
+    'XLE': 'Energy',
+    'XLB': 'Materials',
+    'XLRE': 'Real Estate',
+    'XLU': 'Utilities'
+}
+
+
+# 1. 네이버 금융 테마 수집 및 성장 섹터 자동 판별
+def get_automated_growth_themes():
+    print("성장 주도 테마 자동 탐지 중...")
     url = 'https://finance.naver.com/sise/theme.nhn'
     headers = {'User-Agent': 'Mozilla/5.0'}
     
-    response = requests.get(url, headers=headers, verify=False)
-    soup = BeautifulSoup(response.text, 'lxml')
+    # 1~3페이지까지 넓게 수집하여 트렌드 파악
+    all_themes = []
+    for page in range(1, 4):
+        response = requests.get(f"{url}?&page={page}", headers=headers, verify=False)
+        soup = BeautifulSoup(response.text, 'lxml')
+        rows = soup.select('table.type_1 tr')
+        for row in rows:
+            cols = row.select('td')
+            if len(cols) > 0:
+                name_tag = cols[0].select_one('a')
+                if name_tag:
+                    name = name_tag.text.strip()
+                    link = 'https://finance.naver.com' + name_tag['href']
+                    change = float(cols[1].text.strip().replace('%', '').replace('+', ''))
+                    all_themes.append({'name': name, 'link': link, 'change': change})
+        time.sleep(0.1)
+
+    # 스코어링 로직: (당일 변동성) + (미래 키워드 가산점) - (전통 산업 감점)
+    scored_themes = []
+    for theme in all_themes:
+        score = theme['change']
+        
+        # 키워드 가산점
+        for kw in CORE_GROWTH_KEYWORDS:
+            if kw in theme['name']:
+                score += 5.0
+                break
+        
+        # 전통 산업 감점 (강력한 모멘텀이 없는 경우 제외)
+        for kw in OLD_ECONOMY_KEYWORDS:
+            if kw in theme['name'] and theme['change'] < 5.0:
+                score -= 10.0
+                break
+                
+        scored_themes.append({**theme, 'score': score})
     
-    theme_data = []
-    # 테이블에서 테마명, 상승률 정보 추출
-    rows = soup.select('table.type_1 tr')
-    for row in rows:
-        cols = row.select('td')
-        if len(cols) > 0:
-            name_tag = cols[0].select_one('a')
-            if name_tag:
-                name = name_tag.text.strip()
-                link = name_tag['href']
-                change_rate = cols[1].text.strip()
-                theme_data.append({
-                    'name': name,
-                    'link': 'https://finance.naver.com' + link,
-                    'change': float(change_rate.replace('%', '').replace('+', ''))
-                })
+    df = pd.DataFrame(scored_themes)
+    # 스코어 기준 상위 10개 반환 (국내 테마 탭용)
+    top_display = df.sort_values(by='change', ascending=False).head(10)
+    # 분석용 중점 성장 테마 (스코어 기준 상위 20개)
+    growth_focus = df.sort_values(by='score', ascending=False).head(20)
     
-    # 상승률 상위 10개 반환
-    df = pd.DataFrame(theme_data)
-    return df.sort_values(by='change', ascending=False).head(10)
+    return top_display, growth_focus
+
 
 # 2. 테마 내 종목 상세 수집 (거래량 포함)
 def get_stocks_in_theme(theme_link):
@@ -190,175 +242,183 @@ def check_operating_profit_upward(code):
     except Exception:
         return False
 
-def check_ma_turnaround(code):
+def check_ma_turnaround(code, is_us=False):
     """
     최근 120영업일 OHLCV 데이터를 통해 
     이동평균선 (5, 20, 60, 120일) 이 역배열에서 정배열로 전환 추세인지 확인.
     """
     end_date = datetime.today()
-    start_date = end_date - timedelta(days=200) # 영업일 기준 120일을 넉넉히 가져옴
+    start_date = end_date - timedelta(days=250)
     
     try:
-        # 일별 종가 데이터 (수정주가는 안됨)
-        # 시간 단축을 위해 KOSPI/KOSDAQ 상관없이 ticker 기반 직접 조회
-        ohlcv = stock.get_market_ohlcv(start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d"), code)
-        if len(ohlcv) < 120:
-            return False, 0
+        if is_us:
+            # 미국 주식 처리
+            ticker = yf.Ticker(code)
+            df = ticker.history(period="1y")
+            if len(df) < 120: return False, 0
+            df = df[['Close']].rename(columns={'Close': '종가'})
+            volume = ticker.info.get('volume', 0)
+        else:
+            # 한국 주식 처리
+            ohlcv = stock.get_market_ohlcv(start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d"), code)
+            if len(ohlcv) < 120: return False, 0
+            df = ohlcv[['종가']].copy()
+            volume = ohlcv.iloc[-1]['거래량']
             
-        df = ohlcv[['종가']].copy()
         df['MA5'] = df['종가'].rolling(window=5).mean()
         df['MA20'] = df['종가'].rolling(window=20).mean()
         df['MA60'] = df['종가'].rolling(window=60).mean()
         df['MA120'] = df['종가'].rolling(window=120).mean()
         
-        # 결측치 제거
         df = df.dropna()
-        if len(df) < 10:
-            return False, 0
+        if len(df) < 20: return False, volume
             
         recent = df.iloc[-1]
-        past_60_days = df.iloc[-60] # 약 3개월 전
+        past_60 = df.iloc[-min(60, len(df)-1)]
         
-        # 3개월 전에는 장기 이평선이 위에 있거나(역배열 성향), 
-        # 최근에는 정배열(5 > 20 > 60 > 120)로 진입했는지 체크
+        # 1) 현재 정배열 성향 (5 > 20, 20 > 60)
+        current_ok = (recent['MA5'] > recent['MA20']) and (recent['MA20'] > recent['MA60'])
+        # 2) 과거 역배열 혹은 정체 (60 > 5 or 120 > 20)
+        past_bad = (past_60['MA120'] > past_60['MA60']) or (past_60['MA60'] > past_60['MA5'])
         
-        # 1) 현재가 정배열 성향 (완벽하지 않아도 단기가 중기를 뚫음)
-        current_trend_good = (recent['MA5'] > recent['MA60']) and (recent['MA20'] > recent['MA120'])
-        
-        # 2) 과거에는 역배열 (120 > 60 > 20)
-        past_trend_bad = (past_60_days['MA120'] > past_60_days['MA60']) or (past_60_days['MA60'] > past_60_days['MA20'])
-        
-        if current_trend_good and past_trend_bad:
-            # 거래량도 대략 리턴
-            return True, ohlcv.iloc[-1]['거래량']
-            
-        return False, ohlcv.iloc[-1]['거래량']
-    except Exception as e:
-        print(f"MA Check Error {code}: {e}")
+        return (current_ok and past_bad), volume
+    except Exception:
         return False, 0
 
-def find_undervalued_turnaround_stocks(fund_df, cap_df):
+def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
     """
-    1차 필터링: PER, PBR, DIV, Market Cap
-    2차 필터링: MA 턴어라운드 및 영업이익.
+    성장 테마군 내에서 저평가된 턴어라운드 종목을 발굴합니다.
     """
-    print("\n--- [저평가 턴어라운드(1차 필터링)] ---")
+    print("\n--- [국내 성장주 저평가 탐지] ---")
     
-    # 1. PER, PBR, Market Cap 조건 필터링
-    # cap_df에는 시가총액(상장시가총액) 필드가 있음. fund_df에는 PER, PBR 필드 존재.
-    valid_stocks = []
-    
-    # 두 DataFrame 합치기 (인덱스가 code)
     if fund_df.empty or cap_df.empty:
-        print("벌크 데이터가 없어 저평가 검색을 건너뜁니다.")
         return []
         
     merged_df = fund_df.join(cap_df)
     
-    # 1차 필터 (예: 시총 1000억 이상, PER 0~15, PBR 0~1.5)
-    # pykrx의 시가총액은 단위가 '원'입니다. 1,000억 = 100,000,000,000
-    cond = (
-        (merged_df['상장시가총액'] >= 100000000000) &
-        (merged_df['PER'] > 0) & (merged_df['PER'] < 15) &
-        (merged_df['PBR'] > 0) & (merged_df['PBR'] < 1.5)
-    )
+    # 분석 대상 종목 수집 (성장 테마 내 종목들)
+    code_to_theme = {}
+    for _, theme in growth_themes.iterrows():
+        stocks_df = get_stocks_in_theme(theme['link'])
+        for code in stocks_df['code'].tolist():
+            if code not in code_to_theme:
+                code_to_theme[code] = theme['name']
+        time.sleep(0.1)
     
-    filtered_df = merged_df[cond]
-    print(f"1차 기본 재무 필터 통과 종목 수: {len(filtered_df)}")
-    
-    # 속도를 위해 시가총액/PER 등 점수를 매겨 상위 50~100개만 2차 분석
-    # 저평가 매력이 높은(PER 낮은 순)으로 정렬
-    sorted_filtered = filtered_df.sort_values(by='PER').head(60)
+    target_codes = list(code_to_theme.keys())
+    print(f"분석 대상 성장 종목 수: {len(target_codes)}")
     
     results = []
-    print("\n--- [저평가 턴어라운드(2차 필터링 - 심층 분석)] ---")
-    for code, row in sorted_filtered.iterrows():
+    checked_count = 0
+    
+    for code in list(target_codes):
+        if code not in merged_df.index: continue
+        row = merged_df.loc[code]
+        
+        # 성장주 기준 필터 (PER < 25, PBR < 2.5) - 일반 가치주보다 넉넉하게
         try:
-            name = stock.get_market_ticker_name(code)
-            
-            # MA 턴어라운드 체크
-            is_turnaround, volume = check_ma_turnaround(code)
-            if not is_turnaround:
-                continue
-                
-            # 영업이익 우상향 체크 (DART보다 가벼운 네이버 기반)
-            is_profit_up = check_operating_profit_upward(code)
-            if not is_profit_up:
-                continue
-                
-            # 통과된 종목
-            results.append({
-                'theme': '가치투자(저평가 턴어라운드)',
-                'name': name,
-                'code': code,
-                'volume': int(volume),
-                'per': str(row['PER']),
-                'pbr': str(row['PBR']),
-                'dividend': str(row['DIV']) if 'DIV' in row and row['DIV'] != 0 else "N/A",
-                'is_profitable': "Pass (흑자상승)",
-                'time': datetime.now().strftime('%Y-%m-%d %H:%M')
-            })
-            
-            print(f"💡 통과: {name} ({code}) - PER: {row['PER']}, PBR: {row['PBR']}")
-            
-            # 최종 10개까지만 모이면 종료
-            if len(results) >= 10:
-                break
-                
-            time.sleep(0.5) # API 과부하 방지
-        except Exception as e:
-            continue
-            
+            per, pbr = float(row['PER']), float(row['PBR'])
+            if not (0 < per < 25 and 0 < pbr < 2.5): continue
+            if row['상장시가총액'] < 100000000000: continue # 1000억 이상
+        except: continue
+        
+        # 턴어라운드 체크
+        is_turnaround, volume = check_ma_turnaround(code)
+        if not is_turnaround: continue
+        
+        # 실적 우상향 체크
+        if not check_operating_profit_upward(code): continue
+        
+        name = stock.get_market_ticker_name(code)
+        results.append({
+            'theme': f"국내 저평가 - {code_to_theme[code]}",
+            'name': name,
+            'code': code,
+            'volume': int(volume),
+            'per': str(per),
+            'pbr': str(pbr),
+            'dividend': str(row['DIV']) if row['DIV'] != 0 else "N/A",
+            'is_profitable': "Pass (성장/턴어라운드)",
+            'time': datetime.now().strftime('%Y-%m-%d %H:%M')
+        })
+        print(f"🚀 발굴: {name} ({code})")
+        if len(results) >= 10: break
+        
     return results
 
-def scan_us_tickers(tickers, theme_name, limit=5):
+
+def get_us_leading_sectors():
+    print("\n미국 주도 섹터 분석 중...")
+    sector_returns = {}
+    for symbol, name in US_SECTOR_ETFS.items():
+        try:
+            ticker = yf.Ticker(symbol)
+            hist = ticker.history(period="1mo")
+            if not hist.empty:
+                ret = (hist['Close'].iloc[-1] / hist['Close'].iloc[0]) - 1
+                sector_returns[name] = ret
+        except: continue
+        
+    sorted_sectors = sorted(sector_returns.items(), key=lambda x: x[1], reverse=True)
+    leading_sectors = [s[0] for s in sorted_sectors[:3]]
+    print(f"주도 섹터: {leading_sectors}")
+    return leading_sectors
+
+def scan_us_tickers(tickers, theme_name, leading_sectors, limit=5):
     results = []
-    for t in tickers[:20]:
+    print(f"{theme_name} 스캔 중...")
+    for t in tickers:
         ticker_str = t.replace('.', '-')
         try:
             ticker = yf.Ticker(ticker_str)
             info = ticker.info
             
+            # 1. 섹터 필터 (주도 섹터이거나 테크/헬스케어 우선)
+            sector = info.get('sector', '')
+            if sector not in leading_sectors and sector not in ['Technology', 'Healthcare']:
+                continue
+                
+            # 2. 재무 필터 (성장주 기준: PER < 40, PBR < 7)
             pe = info.get('trailingPE')
             pb = info.get('priceToBook')
+            if not pe or pe > 40 or not pb or pb > 7: continue
             
-            pe_str = f"{pe:.2f}" if pe else "N/A"
-            pb_str = f"{pb:.2f}" if pb else "N/A"
+            # 3. 턴어라운드 체크
+            is_turnaround, volume = check_ma_turnaround(ticker_str, is_us=True)
+            if not is_turnaround: continue
             
             results.append({
                 'theme': theme_name,
                 'name': info.get('shortName', ticker_str),
                 'code': ticker_str,
-                'volume': int(info.get('volume', 0) or 0),
-                'per': pe_str,
-                'pbr': pb_str,
+                'volume': int(volume),
+                'per': f"{pe:.2f}",
+                'pbr': f"{pb:.2f}",
                 'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
-                'is_profitable': "Pass (흑자)" if pe and pe > 0 else "N/A",
+                'is_profitable': "Pass (성장/턴어라운드)",
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M')
             })
-            print(f"🇺🇸 통과: {ticker_str}")
+            print(f"🇺🇸 발굴: {ticker_str} ({sector})")
             
             if len(results) >= limit: break
-            time.sleep(0.1)
-        except Exception as e:
-            continue
+        except: continue
             
     return results
 
 def find_us_turnaround_stocks():
-    print("\n--- [미국 저평가 턴어라운드 검증 (S&P 500 + NASDAQ 100)] ---")
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    import io
+    print("\n--- [미국 성장주 저평가 탐지] ---")
+    leading_sectors = get_us_leading_sectors()
     
+    headers = {'User-Agent': 'Mozilla/5.0'}
     sp500_tickers = []
     ndx_tickers = []
     
     try:
         res = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', headers=headers, verify=False)
         sp500 = pd.read_html(io.StringIO(res.text))[0]
-        sp500_tickers = sp500['Symbol'].tolist()[:300]
-    except Exception as e:
-        print(f"S&P 500 리스트 조회 실패: {e}")
+        # 시총 상위 위주로 스캔 범위를 적절히 조절 (속도 고려)
+        sp500_tickers = sp500['Symbol'].tolist()[:150]
+    except: pass
 
     try:
         res_ndx = requests.get('https://en.wikipedia.org/wiki/Nasdaq-100', headers=headers, verify=False)
@@ -367,23 +427,15 @@ def find_us_turnaround_stocks():
             if 'Ticker' in t.columns:
                 ndx_tickers = t['Ticker'].tolist()
                 break
-            elif 'Symbol' in t.columns:
-                ndx_tickers = t['Symbol'].tolist()
-                break
-    except Exception as e:
-        print(f"NASDAQ 100 리스트 조회 실패: {e}")
+    except: pass
 
     results = []
-    
     if sp500_tickers:
-        print("\nS&P 500 스캔 시작...")
-        results.extend(scan_us_tickers(sp500_tickers, 'S&P 500 (턴어라운드)', 10))
-        
+        results.extend(scan_us_tickers(sp500_tickers, '미국 저평가 - S&P 500', leading_sectors, 5))
     if ndx_tickers:
-        print("\nNASDAQ 100 스캔 시작...")
-        existing_codes = [r['code'] for r in results]
-        ndx_tickers = [t for t in ndx_tickers if t.replace('.', '-') not in existing_codes]
-        results.extend(scan_us_tickers(ndx_tickers, 'NASDAQ 100 (턴어라운드)', 10))
+        existing = [r['code'] for r in results]
+        ndx_tickers = [t for t in ndx_tickers if t not in existing]
+        results.extend(scan_us_tickers(ndx_tickers, '미국 저평가 - NASDAQ 100', leading_sectors, 5))
         
     return results
 
@@ -397,13 +449,13 @@ def main():
         print("DART_API_KEY가 없습니다. 수익성 체크를 건너뜁니다.")
         corp_list = None
 
-    # 테마 수집
-    top_themes = get_naver_themes()
-    print(f"상위 10개 테마: {list(top_themes['name'])}")
+    # 1. 테마 수집 및 성장 섹터 자동 판별
+    top_themes, growth_focus = get_automated_growth_themes()
+    print(f"주요 테마: {list(top_themes['name'][:5])}...")
     
     results = []
     
-    # 투자지표(PER, PBR 등) 및 시가총액 수집 (1단계: 전체 벌크 수집)
+    # 2. 투자지표 벌크 수집
     print("시장 투자지표 수집 중...")
     fund_df = pd.DataFrame()
     cap_df = pd.DataFrame()
@@ -418,20 +470,20 @@ def main():
                 fund_df = temp_fund
                 cap_df = temp_cap
                 last_business_day = search_date
-                print(f"{search_date} 기준 벌크 데이터를 사용합니다.")
                 break
-        except Exception:
-            continue
+        except: continue
 
-    # [신규 추가] 저평가 턴어라운드 종목 검색
-    undervalued_stocks = find_undervalued_turnaround_stocks(fund_df, cap_df)
+    # [수정] 자동 탐지된 성장 테마 기반 국내 종목 검색
+    undervalued_stocks = find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus)
     results.extend(undervalued_stocks)
 
-    # [신규 추가] 미국 저평가 턴어라운드 종목 검색
+    # [수정] 자동 탐지된 주도 섹터 기반 미국 종목 검색
     us_undervalued_stocks = find_us_turnaround_stocks()
     results.extend(us_undervalued_stocks)
 
+    # 3. 일반 테마 종목 분석 (Top Themes)
     for _, theme in top_themes.iterrows():
+
         print(f"[{theme['name']}] 테마 종목 분석 중...")
         stocks_df = get_stocks_in_theme(theme['link'])
         
