@@ -26,7 +26,8 @@ function filterData(filter) {
         let keyword = '국내 테마';
         if (filter === 'Pass') keyword = '수익';
         if (filter === 'Value') keyword = '국내 저평가';
-        if (filter === 'US') keyword = '미국 저평가';
+        if (filter === 'US_SP') keyword = '미국 S&P 500';
+        if (filter === 'US_NDQ') keyword = '미국 나스닥';
         btn.classList.toggle('active', btn.textContent.trim() === keyword);
     });
 
@@ -50,12 +51,16 @@ function filterData(filter) {
             item.theme === '가치투자(저평가 턴어라운드)'
         );
         render(filtered);
-    } else if (filter === 'US') {
-        // '미국 저평가', 'S&P 500', 'NASDAQ 100' 관련 모든 테마 필터링
+    } else if (filter === 'US_SP') {
+        // S&P 500 관련 모든 테마 필터링
         const filtered = allData.filter(item => 
-            item.theme.startsWith('미국 저평가') || 
-            item.theme.includes('S&P 500') ||
-            item.theme.includes('NASDAQ 100')
+            item.theme.includes('S&P 500')
+        );
+        render(filtered);
+    } else if (filter === 'US_NDQ') {
+        // NASDAQ 관련 모든 테마 필터링
+        const filtered = allData.filter(item => 
+            item.theme.includes('NASDAQ')
         );
         render(filtered);
     }

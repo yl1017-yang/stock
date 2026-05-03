@@ -22,14 +22,10 @@
     </header>
 
     <div class="controls">
-      <button class="filter-btn active" onclick="filterData('All')">
-        국내 테마
-      </button>
-      <!-- <button class="filter-btn" onclick="filterData('Pass')">수익종목만</button> -->
-      <button class="filter-btn" onclick="filterData('Value')">
-        국내 저평가
-      </button>
-      <button class="filter-btn" onclick="filterData('US')">미국 저평가</button>
+      <button class="filter-btn active" onclick="filterData('All')">국내 테마</button>
+      <button class="filter-btn" onclick="filterData('Value')">국내 저평가</button>
+      <button class="filter-btn" onclick="filterData('US_SP')">미국 S&P 500</button>
+      <button class="filter-btn" onclick="filterData('US_NDQ')">미국 나스닥</button>
     </div>
 
     <div id="loading">분석 데이터를 불러오는 중...</div>
