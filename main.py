@@ -451,10 +451,14 @@ def find_us_turnaround_stocks():
         res_ndx = requests.get('https://en.wikipedia.org/wiki/Nasdaq-100', headers=headers, verify=False)
         tables = pd.read_html(io.StringIO(res_ndx.text))
         for t in tables:
-            if 'Ticker' in t.columns:
-                ndx_tickers = t['Ticker'].tolist()
+            # 'Ticker' 또는 'Symbol' 컬럼이 있는 테이블 찾기
+            target_col = next((col for col in t.columns if col in ['Ticker', 'Symbol']), None)
+            if target_col:
+                ndx_tickers = t[target_col].tolist()
+                print(f"NASDAQ 100 종목 발견: {len(ndx_tickers)}개")
                 break
-    except: pass
+    except Exception as e:
+        print(f"NASDAQ 100 수집 오류: {e}")
 
     results = []
     if sp500_tickers:
@@ -490,15 +494,24 @@ def main():
     last_business_day = datetime.now().strftime('%Y%m%d')
     for i in range(7):
         search_date = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
-        try:
-            temp_fund = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
-            temp_cap = stock.get_market_cap_by_ticker(search_date, market="ALL")
-            if not temp_fund.empty and not temp_cap.empty:
-                fund_df = temp_fund
-                cap_df = temp_cap
-                last_business_day = search_date
-                break
-        except: continue
+        success = False
+        # pykrx API 호출 재시도 로직 (최대 3회)
+        for attempt in range(3):
+            try:
+                temp_fund = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
+                temp_cap = stock.get_market_cap_by_ticker(search_date, market="ALL")
+                if not temp_fund.empty and not temp_cap.empty:
+                    fund_df = temp_fund
+                    cap_df = temp_cap
+                    last_business_day = search_date
+                    success = True
+                    break
+            except Exception as e:
+                print(f"[{search_date}] API 호출 시도 {attempt+1}/3 실패: {e}")
+                time.sleep(1)
+        
+        if success:
+            break
 
     # [수정] 자동 탐지된 성장 테마 기반 국내 종목 검색
     undervalued_stocks = find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus)
@@ -565,23 +578,30 @@ def main():
             })
             
     # [신규 추가] 저평가 가치투자 종목 폴백 (결과가 없을 경우 수집된 네이버 종목 중 추출)
-    has_value = any(r['theme'] == '가치투자(저평가 턴어라운드)' for r in results)
+    has_value = any(r['theme'].startswith('국내 저평가') for r in results)
     if not has_value:
         print("Fallback: 네이버 금융 수집 종목 중 저평가 가치투자 종목을 추출합니다...")
-        fallback_items = []
+        fallback_results = []
+        theme_counts = {}
         for r in results:
             try:
+                # 이미 분류된 국내/미국 저평가 제외
+                if r['theme'].startswith('국내 저평가') or r['theme'].startswith('미국 저평가'): continue
+                
                 if r['per'] != 'N/A' and r['pbr'] != 'N/A':
                     per_val = float(r['per'].replace(',', ''))
                     pbr_val = float(r['pbr'].replace(',', ''))
                     if 0 < per_val < 30 and 0 < pbr_val < 3.0:
-                        fallback_items.append({
-                            **r,
-                            'theme': '가치투자(저평가 턴어라운드)'
-                        })
+                        theme_name = f"국내 저평가 - {r['theme']}"
+                        if theme_counts.get(theme_name, 0) < 5:
+                            fallback_results.append({
+                                **r,
+                                'theme': theme_name
+                            })
+                            theme_counts[theme_name] = theme_counts.get(theme_name, 0) + 1
             except ValueError:
                 continue
-        results.extend(fallback_items)
+        results.extend(fallback_results)
 
     # [신규 추가] 미국 우량주 폴백 (결과가 없을 경우 기본 우량주 데이터 생성)
     has_us = any('S&P 500' in r['theme'] or 'NASDAQ' in r['theme'] for r in results)

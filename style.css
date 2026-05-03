@@ -185,9 +185,9 @@ h1 {
     opacity: 0.2;
 }
 
-.status-pass { background: rgba(0, 255, 136, 0.1); color: var(--success-color); }
-.status-fail { background: rgba(255, 77, 77, 0.1); color: var(--fail-color); }
-.status-skip { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); }
+.status-pass { background: rgba(0, 255, 136, 0.1); color: var(--success-color); font-size: 0.8rem;}
+.status-fail { background: rgba(255, 77, 77, 0.1); color: var(--fail-color); font-size: 0.8rem; }
+.status-skip { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.8rem; }
 
 .change-val {
     font-size: 0.75rem;
