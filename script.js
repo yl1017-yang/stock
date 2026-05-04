@@ -26,7 +26,7 @@ function filterData(filter) {
         let keyword = '국내 테마';
         if (filter === 'Pass') keyword = '수익';
         if (filter === 'Value') keyword = '국내 저평가';
-        if (filter === 'US_SP') keyword = '미국 S&P 500';
+        if (filter === 'US_SP') keyword = '미국 S&P500';
         if (filter === 'US_NDQ') keyword = '미국 나스닥';
         btn.classList.toggle('active', btn.textContent.trim() === keyword);
     });
@@ -96,6 +96,57 @@ function render(data) {
             const changeClass = isUp ? 'up' : (isDown ? 'down' : '');
             const changeHtml = s.change_1m ? `<span class="change-val ${changeClass}">${s.change_1m}</span>` : '';
 
+            // 프리미엄 지표 HTML 생성
+            let premiumHtml = '';
+            if (s.upside && s.upside !== "N/A") {
+                const fairValue = s.fair_value && s.fair_value !== "N/A" ? Number(s.fair_value).toLocaleString() : "분석중";
+                premiumHtml = `
+                    <div class="upside-row">
+                        <span class="fair-value">적정가 ${fairValue}</span>
+                        <span class="upside-badge">${s.upside} 여력</span>
+                    </div>
+                `;
+            }
+
+            // 등급 배지 HTML 생성
+            let gradesHtml = '';
+            if (s.grades) {
+                const getGradeClass = (g) => {
+                    if (g === '최고') return 'excellent';
+                    if (g === '우수') return 'good';
+                    if (g === '보통') return 'fair';
+                    if (g === '주의') return 'poor';
+                    return '';
+                };
+                gradesHtml = `
+                    <div class="grade-container">
+                        <span class="grade-badge ${getGradeClass(s.grades.profit)}">수익:${s.grades.profit}</span>
+                        <span class="grade-badge ${getGradeClass(s.grades.health)}">재무:${s.grades.health}</span>
+                        <span class="grade-badge ${getGradeClass(s.grades.growth)}">성장:${s.grades.growth}</span>
+                        ${s.opinion && s.opinion !== 'N/A' ? `<span class="opinion-badge">${s.opinion}</span>` : ''}
+                    </div>
+                `;
+            }
+
+            // 지표 HTML 생성
+            let indicatorsHtml = `
+                <span class="indicator">PER <b>${s.per}</b></span>
+                <span class="separator">|</span>
+                <span class="indicator">PBR <b>${s.pbr}</b></span>
+            `;
+            
+            if (s.eps && s.eps !== "N/A") {
+                indicatorsHtml += `
+                    <span class="separator">|</span>
+                    <span class="indicator">EPS <b>${s.eps}</b></span>
+                `;
+            }
+
+            indicatorsHtml += `
+                <span class="separator">|</span>
+                <span class="indicator">DIV <b>${s.dividend === 'N/A' || s.dividend.includes('%') ? s.dividend : s.dividend + '%'}</b></span>
+            `;
+
             stocksHtml += `
                 <div class="stock-item-wrapper">
                     <div class="stock-item">
@@ -103,12 +154,10 @@ function render(data) {
                         <span class="profit-status ${statusClass}">${s.is_profitable}</span>
                     </div>
                     <div class="stock-indicators">
-                        <span class="indicator">PER <b>${s.per}</b></span>
-                        <span class="separator">|</span>
-                        <span class="indicator">PBR <b>${s.pbr}</b></span>
-                        <span class="separator">|</span>
-                        <span class="indicator">DIV <b>${s.dividend === 'N/A' ? 'N/A' : s.dividend + '%'}</b></span>
+                        ${indicatorsHtml}
                     </div>
+                    ${premiumHtml}
+                    ${gradesHtml}
                 </div>
             `;
         });

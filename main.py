@@ -158,50 +158,77 @@ def check_profitability(corp_list, corp_code):
         print(f"Error checking {corp_code}: {e}")
         return "Error"
 
-# 4. 네이버 금융 수집 (Fallback용)
-def get_naver_financials(code):
+# 4. 네이버 금융 수집 (상세 지표 및 등급 산출용)
+def get_naver_financials_advanced(code):
     url = f"https://finance.naver.com/item/main.naver?code={code}"
     headers = {'User-Agent': 'Mozilla/5.0'}
     try:
         res = requests.get(url, headers=headers, timeout=5, verify=False)
         soup = BeautifulSoup(res.text, 'lxml')
         
-        # PER, PBR, DIV
+        # 1. 기본 지표 (PER, PBR, DIV)
         per = soup.select_one('#_per').text.strip() if soup.select_one('#_per') else "N/A"
         pbr = soup.select_one('#_pbr').text.strip() if soup.select_one('#_pbr') else "N/A"
         dvd_tag = soup.select_one('#_dvd')
         dvd = dvd_tag.text.strip() if dvd_tag else "N/A"
         
-        if per == "N/A":
-            per_label = soup.find('th', string=re.compile('PER'))
-            if per_label:
-                per_val = per_label.find_next_sibling('td')
-                if per_val:
-                    per = per_val.text.strip()
-        
-        # 영업이익 확인 (Fallback)
-        is_profitable = "N/A"
+        # 2. 컨센서스 및 목표주가
+        target_price = "N/A"
+        opinion = "N/A"
+        cns_table = soup.select_one('.cns_report')
+        if cns_table:
+            tp_tag = cns_table.select_one('em')
+            if tp_tag: target_price = tp_tag.text.strip().replace(',', '')
+            op_tag = cns_table.select_one('strong')
+            if op_tag: opinion = op_tag.text.strip()
+
+        # 3. 상세 재무 비율 (등급 산출용)
+        grades = {"profit": "보통", "health": "보통", "growth": "보통"}
         table = soup.select_one('.section.cop_analysis table')
         if table:
             rows = table.select('tr')
             for row in rows:
                 th = row.select_one('th')
-                if th and '영업이익' in th.text:
-                    tds = row.select('td')
-                    if tds and len(tds) > 3:
-                        latest_op = tds[3].text.strip().replace(',', '')
-                        if latest_op and latest_op != '-':
-                            try:
-                                val = float(latest_op)
-                                is_profitable = "Pass (흑자)" if val > 0 else "Fail (적자)"
-                            except ValueError:
-                                pass
-                        break
-        
-        return per, pbr, dvd, is_profitable
+                if not th: continue
+                txt = th.text.strip()
+                tds = row.select('td')
+                if not tds or len(tds) < 4: continue
+                
+                # 최근 데이터 (가장 오른쪽 유효값)
+                val_txt = tds[3].text.strip().replace(',', '')
+                try:
+                    val = float(val_txt)
+                    if 'ROE' in txt:
+                        if val > 15: grades["profit"] = "최고"
+                        elif val > 10: grades["profit"] = "우수"
+                        elif val < 0: grades["profit"] = "주의"
+                    elif '부채비율' in txt:
+                        if val < 60: grades["health"] = "최고"
+                        elif val < 100: grades["health"] = "우수"
+                        elif val > 200: grades["health"] = "주의"
+                    elif '영업이익률' in txt:
+                        if val > 20: grades["growth"] = "최고"
+                        elif val > 10: grades["growth"] = "우수"
+                except: pass
+
+        return {
+            "per": per, "pbr": pbr, "dividend": dvd,
+            "target_price": target_price, "opinion": opinion,
+            "grades": grades
+        }
     except Exception as e:
-        print(f"Error scraping {code}: {e}")
-        return "N/A", "N/A", "N/A", "Error"
+        print(f"Error scraping advanced info for {code}: {e}")
+        return None
+
+def get_naver_financials(code):
+    # 기존 함수 유지 (호환성용)
+    info = get_naver_financials_advanced(code)
+    if info:
+        is_profitable = "N/A"
+        if info['grades']['profit'] in ['최고', '우수', '보통']:
+            is_profitable = "Pass (흑자)"
+        return info['per'], info['pbr'], info['dividend'], is_profitable
+    return "N/A", "N/A", "N/A", "Error"
 
 
 # =============== [가치투자(저평가 턴어라운드) 신규 로직] ===============
@@ -312,63 +339,95 @@ def get_1m_return(code, is_us=False):
 
 def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
     """
-    성장 테마군 내에서 저평가된 턴어라운드 종목을 발굴합니다.
+    국내 전체 시장 종목 중 저평가된 턴어라운드 우량주를 발굴합니다.
+    (테마에 국한되지 않고 전체 시장을 탐색)
     """
-    print("\n--- [국내 성장주 저평가 탐지] ---")
+    print("\n--- [국내 전종목 저평가/턴어라운드 탐지] ---")
     
     if fund_df.empty or cap_df.empty:
         return []
         
     merged_df = fund_df.join(cap_df)
     
-    # 분석 대상 종목 수집 (성장 테마 내 종목들)
+    # 1. 1차 필터링: 재무 지표 기준 (전체 시장 대상)
+    # PER < 25, PBR < 2.5, 시가총액 > 1,000억 (조금 더 넓은 범위의 후보군 확보)
+    try:
+        candidates_df = merged_df[
+            (merged_df['PER'] > 0) & (merged_df['PER'] < 25) &
+            (merged_df['PBR'] > 0) & (merged_df['PBR'] < 2.5) &
+            (merged_df['상장시가총액'] >= 100000000000)
+        ].copy()
+        
+        # PBR 낮은 순으로 정렬하여 진짜 저평가부터 검사
+        candidates_df = candidates_df.sort_values(by='PBR')
+        target_codes = candidates_df.index.tolist()
+    except Exception as e:
+        print(f"필터링 중 오류 발생: {e}")
+        return []
+
+    print(f"1차 필터링 통과 종목 수: {len(target_codes)}")
+    
+    # 테마 매칭을 위한 데이터 준비 (발굴된 종목이 어떤 테마인지 표시하기 위함)
     code_to_theme = {}
     for _, theme in growth_themes.iterrows():
-        stocks_df = get_stocks_in_theme(theme['link'])
-        for code in stocks_df['code'].tolist():
-            if code not in code_to_theme:
-                code_to_theme[code] = theme['name']
-        time.sleep(0.1)
-    
-    target_codes = list(code_to_theme.keys())
-    print(f"분석 대상 성장 종목 수: {len(target_codes)}")
+        try:
+            stocks_df = get_stocks_in_theme(theme['link'])
+            for code in stocks_df['code'].tolist():
+                if code not in code_to_theme:
+                    code_to_theme[code] = theme['name']
+            time.sleep(0.05)
+        except: continue
     
     results = []
-    checked_count = 0
     
-    for code in list(target_codes):
-        if code not in merged_df.index: continue
+    # 2. 2차 필터링: 기술적 분석(MA 턴어라운드) 및 실적 추세 (후보군 전수 조사)
+    print(f"상세 분석 시작 (대상: {len(target_codes)}개 종목)...")
+    for code in target_codes:
         row = merged_df.loc[code]
         
-        # 성장주 기준 필터 (PER < 25, PBR < 2.5) - 일반 가치주보다 넉넉하게
-        try:
-            per, pbr = float(row['PER']), float(row['PBR'])
-            if not (0 < per < 25 and 0 < pbr < 2.5): continue
-            if row['상장시가총액'] < 100000000000: continue # 1000억 이상
-        except: continue
-        
-        # 턴어라운드 체크
+        # 턴어라운드 체크 (MA5 > MA20 등)
         is_turnaround, volume = check_ma_turnaround(code)
         if not is_turnaround: continue
         
-        # 실적 우상향 체크
+        # 실적 우상향 체크 (최근 분기 영업이익 등)
         if not check_operating_profit_upward(code): continue
         
         name = stock.get_market_ticker_name(code)
+        
+        # 테마명 결정
+        original_theme = code_to_theme.get(code)
+        display_theme = f"국내 저평가 - {original_theme}" if original_theme else "국내 저평가 - 우량가치주"
+        
+        # 프리미엄 지표 추가 수집
+        adv = get_naver_financials_advanced(code)
+        target_p = adv['target_price'] if adv else "N/A"
+        upside = "N/A"
+        try:
+            # 현재가 가져오기
+            curr_p = stock.get_market_ohlcv(datetime.now().strftime('%Y%m%d'), datetime.now().strftime('%Y%m%d'), code)['종가'].iloc[-1]
+            if target_p != "N/A":
+                upside = f"{((float(target_p) / curr_p) - 1) * 100:+.2f}%"
+        except: pass
+
         results.append({
-            'theme': f"국내 저평가 - {code_to_theme[code]}",
+            'theme': display_theme,
             'name': name,
             'code': code,
             'volume': int(volume),
             'change_1m': get_1m_return(code),
-            'per': str(per),
-            'pbr': str(pbr),
-            'dividend': str(row['DIV']) if row['DIV'] != 0 else "N/A",
-            'is_profitable': "Pass (성장/턴어라운드)",
+            'per': f"{float(row['PER']):.2f}",
+            'pbr': f"{float(row['PBR']):.2f}",
+            'dividend': f"{float(row['DIV']):.2f}%" if row['DIV'] != 0 else "N/A",
+            'upside': upside,
+            'fair_value': target_p,
+            'opinion': adv['opinion'] if adv else "N/A",
+            'grades': adv['grades'] if adv else {"profit": "보통", "health": "보통", "growth": "보통"},
+            'is_profitable': "Pass (우량/턴어라운드)",
             'time': datetime.now().strftime('%Y-%m-%d %H:%M')
         })
-        print(f"🚀 발굴: {name} ({code})")
-        if len(results) >= 10: break
+        print(f"🚀 발굴: {name} ({code}) - {display_theme} (상승여력: {upside})")
+        
+        if len(results) >= 15: break # 최대 15개 발굴하여 풍부한 정보 제공
         
     return results
 
@@ -390,7 +449,7 @@ def get_us_leading_sectors():
     print(f"주도 섹터: {leading_sectors}")
     return leading_sectors
 
-def scan_us_tickers(tickers, theme_name, leading_sectors, limit=5):
+def scan_us_tickers(tickers, theme_name, leading_sectors, limit=15):
     results = []
     print(f"{theme_name} 스캔 중...")
     for t in tickers:
@@ -399,22 +458,37 @@ def scan_us_tickers(tickers, theme_name, leading_sectors, limit=5):
             ticker = yf.Ticker(ticker_str)
             info = ticker.info
             
-            # 1. 섹터 필터 (주도 섹터이거나 테크/헬스케어 우선)
-            sector = info.get('sector', '')
-            if sector not in leading_sectors and sector not in ['Technology', 'Healthcare']:
-                continue
-                
-            # 2. 재무 필터 (성장주 기준: PER < 40, PBR < 7)
+            # 1. 재무 필터 및 프리미엄 지표 (완화된 기준: PER < 45, PBR < 10)
             pe = info.get('trailingPE')
             pb = info.get('priceToBook')
-            if not pe or pe > 40 or not pb or pb > 7: continue
+            if not pe or pe > 45 or not pb or pb > 10: continue
             
             # 3. 턴어라운드 체크
             is_turnaround, volume = check_ma_turnaround(ticker_str, is_us=True)
             if not is_turnaround: continue
             
+            # 4. 프리미엄 지표 (상승여력 등)
+            target_p = info.get('targetMeanPrice', "N/A")
+            curr_p = info.get('currentPrice', 0)
+            upside = "N/A"
+            if target_p != "N/A" and curr_p > 0:
+                upside = f"{((target_p / curr_p) - 1) * 100:+.2f}%"
+            
+            # 등급 산출 (미국)
+            grades = {"profit": "보통", "health": "보통", "growth": "보통"}
+            roe = info.get('returnOnEquity', 0)
+            if roe > 0.15: grades["profit"] = "최고"
+            elif roe > 0.10: grades["profit"] = "우수"
+            
+            debt_to_equity = info.get('debtToEquity', 150)
+            if debt_to_equity < 60: grades["health"] = "최고"
+            elif debt_to_equity < 100: grades["health"] = "우수"
+
+            eps = info.get('trailingEps', "N/A")
+            if eps != "N/A": eps = f"${eps:.2f}"
+
             results.append({
-                'theme': theme_prefix + f" ({sector})", # 지수명과 섹터명을 결합
+                'theme': theme_name + f" ({sector})", 
                 'name': info.get('shortName', ticker_str),
                 'code': ticker_str,
                 'volume': volume,
@@ -422,10 +496,15 @@ def scan_us_tickers(tickers, theme_name, leading_sectors, limit=5):
                 'per': f"{pe:.2f}",
                 'pbr': f"{pb:.2f}",
                 'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
+                'upside': upside,
+                'fair_value': str(target_p),
+                'opinion': info.get('recommendationKey', "N/A").replace('_', ' ').title(),
+                'grades': grades,
+                'eps': eps,
                 'is_profitable': "Pass (성장/턴어라운드)",
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M')
             })
-            print(f"🇺🇸 발굴: {ticker_str} ({sector})")
+            print(f"🇺🇸 발굴: {ticker_str} ({sector}) - 상승여력: {upside}")
             
             if len(results) >= limit: break
         except: continue
@@ -443,8 +522,8 @@ def find_us_turnaround_stocks():
     try:
         res = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', headers=headers, verify=False)
         sp500 = pd.read_html(io.StringIO(res.text))[0]
-        # 시총 상위 위주로 스캔 범위를 적절히 조절 (속도 고려)
-        sp500_tickers = sp500['Symbol'].tolist()[:150]
+        # S&P 500 전 종목 스캔 (누락 없는 저평가주 발굴)
+        sp500_tickers = sp500['Symbol'].tolist()
     except: pass
 
     try:
@@ -462,11 +541,11 @@ def find_us_turnaround_stocks():
 
     results = []
     if sp500_tickers:
-        results.extend(scan_us_tickers(sp500_tickers, '미국 저평가 - S&P 500', leading_sectors, 10)) # 10개 
+        results.extend(scan_us_tickers(sp500_tickers, 'S&P 500', leading_sectors, 15))
     if ndx_tickers:
         existing = [r['code'] for r in results]
         ndx_tickers = [t for t in ndx_tickers if t not in existing]
-        results.extend(scan_us_tickers(ndx_tickers, '미국 저평가 - NASDAQ 100', leading_sectors, 10)) # 10개 
+        results.extend(scan_us_tickers(ndx_tickers, 'NASDAQ 100', leading_sectors, 15))
         
     return results
 
@@ -513,7 +592,7 @@ def main():
         if success:
             break
 
-    # [수정] 자동 탐지된 성장 테마 기반 국내 종목 검색
+    # [수정] 국내 전체 시장 기반 저평가 턴어라운드 종목 발굴
     undervalued_stocks = find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus)
     results.extend(undervalued_stocks)
 
@@ -523,11 +602,15 @@ def main():
 
     # 3. 일반 테마 종목 분석 (Top Themes)
     for _, theme in top_themes.iterrows():
-
+        # 이미 저평가 카테고리에 포함된 종목은 중복 수집 제외 (UI 깔끔하게 유지)
+        existing_codes = [r['code'] for r in results]
+        
         print(f"[{theme['name']}] 테마 종목 분석 중...")
         stocks_df = get_stocks_in_theme(theme['link'])
         
         for _, s in stocks_df.iterrows():
+            if s['code'] in existing_codes: continue # 중복 제거
+            
             is_profitable = "Skipped"
             if corp_list:
                 is_profitable = check_profitability(corp_list, s['code'])
@@ -556,13 +639,13 @@ def main():
                     pass
 
             # 3. 데이터가 여전히 없거나 API 사용이 불가능한 경우 Naver Scraping 사용 (마지막 수단)
-            if per == "N/A" or is_profitable in ["Skipped", "N/A", "Unknown", "Error"]:
-                n_per, n_pbr, n_dvd, n_profit = get_naver_financials(s['code'])
-                if per == "N/A": per = n_per
-                if pbr == "N/A": pbr = n_pbr
-                if dvd == "N/A": dvd = n_dvd
-                if is_profitable in ["Skipped", "N/A", "Unknown", "Error"] and n_profit != "N/A":
-                    is_profitable = n_profit
+            adv = get_naver_financials_advanced(s['code'])
+            if adv:
+                if per == "N/A": per = adv['per']
+                if pbr == "N/A": pbr = adv['pbr']
+                if dvd == "N/A": dvd = adv['dividend']
+                if is_profitable in ["Skipped", "N/A", "Unknown", "Error"] and adv['grades']['profit'] != "N/A":
+                    is_profitable = "Pass (흑자)" if adv['grades']['profit'] != '주의' else "Fail (적자)"
 
             results.append({
                 'theme': theme['name'],
@@ -573,6 +656,10 @@ def main():
                 'per': per,
                 'pbr': pbr,
                 'dividend': dvd,
+                'upside': f"{((float(adv['target_price']) / curr_p) - 1) * 100:+.2f}%" if adv and adv['target_price'] != "N/A" else "N/A",
+                'fair_value': adv['target_price'] if adv else "N/A",
+                'opinion': adv['opinion'] if adv else "N/A",
+                'grades': adv['grades'] if adv else {"profit": "보통", "health": "보통", "growth": "보통"},
                 'is_profitable': is_profitable,
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M')
             })
@@ -588,18 +675,34 @@ def main():
                 # 이미 분류된 국내/미국 저평가 제외
                 if r['theme'].startswith('국내 저평가') or r['theme'].startswith('미국 저평가'): continue
                 
-                if r['per'] != 'N/A' and r['pbr'] != 'N/A':
-                    per_val = float(r['per'].replace(',', ''))
-                    pbr_val = float(r['pbr'].replace(',', ''))
-                    if 0 < per_val < 30 and 0 < pbr_val < 3.0:
-                        theme_name = f"국내 저평가 - {r['theme']}"
-                        if theme_counts.get(theme_name, 0) < 10: # 국내 저평가 10개 추출
-                            fallback_results.append({
-                                **r,
-                                'theme': theme_name
-                            })
-                            theme_counts[theme_name] = theme_counts.get(theme_name, 0) + 1
-            except ValueError:
+                # 상세 지표 수집 (폴백 데이터에도 등급/상승여력 부여)
+                adv = get_naver_financials_advanced(r['code'])
+                if not adv: continue
+
+                per_val = float(adv['per'].replace(',', '')) if adv['per'] != 'N/A' else 999
+                pbr_val = float(adv['pbr'].replace(',', '')) if adv['pbr'] != 'N/A' else 999
+                
+                if 0 < per_val < 30 and 0 < pbr_val < 3.0:
+                    theme_name = f"국내 저평가 - {r['theme']}"
+                    if theme_counts.get(theme_name, 0) < 10: 
+                        target_p = adv['target_price']
+                        upside = "N/A"
+                        try:
+                            curr_p = stock.get_market_ohlcv(datetime.now().strftime('%Y%m%d'), datetime.now().strftime('%Y%m%d'), r['code'])['종가'].iloc[-1]
+                            if target_p != "N/A":
+                                upside = f"{((float(target_p) / curr_p) - 1) * 100:+.2f}%"
+                        except: pass
+
+                        fallback_results.append({
+                            **r,
+                            'theme': theme_name,
+                            'upside': upside,
+                            'fair_value': target_p,
+                            'opinion': adv['opinion'],
+                            'grades': adv['grades']
+                        })
+                        theme_counts[theme_name] = theme_counts.get(theme_name, 0) + 1
+            except Exception:
                 continue
         results.extend(fallback_results)
 
@@ -627,16 +730,16 @@ def main():
     if not has_nasdaq:
         print("Fallback: NASDAQ 100 기본 데이터를 생성합니다...")
         ndq_fallbacks = [
-            {"theme": "미국 저평가 - NASDAQ 100 (Communication)", "name": "Alphabet (Google)", "code": "GOOGL", "volume": 18000000, "per": "26.30", "pbr": "6.80", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "+3.10%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Cyclical)", "name": "Amazon", "code": "AMZN", "volume": 28000000, "per": "42.10", "pbr": "8.50", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "-1.20%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Cyclical)", "name": "Tesla", "code": "TSLA", "volume": 85000000, "per": "45.60", "pbr": "9.20", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "-5.40%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "Broadcom", "code": "AVGO", "volume": 3200000, "per": "32.10", "pbr": "11.40", "dividend": "1.40%", "is_profitable": "Pass (흑자)", "change_1m": "+4.20%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Defensive)", "name": "Costco", "code": "COST", "volume": 2100000, "per": "48.20", "pbr": "15.30", "dividend": "0.55%", "is_profitable": "Pass (흑자)", "change_1m": "+2.80%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Communication)", "name": "Netflix", "code": "NFLX", "volume": 4500000, "per": "35.80", "pbr": "10.20", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "+6.20%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "AMD", "code": "AMD", "volume": 65000000, "per": "75.10", "pbr": "4.80", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "-3.15%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Defensive)", "name": "PepsiCo", "code": "PEP", "volume": 5200000, "per": "24.50", "pbr": "12.30", "dividend": "3.05%", "is_profitable": "Pass (흑자)", "change_1m": "+1.20%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "Adobe", "code": "ADBE", "volume": 2800000, "per": "31.20", "pbr": "14.50", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "+2.40%"},
-            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "Intel", "code": "INTC", "volume": 42000000, "per": "N/A", "pbr": "1.10", "dividend": "1.52%", "is_profitable": "Fail (적자)", "change_1m": "-8.20%"}
+            {"theme": "미국 저평가 - NASDAQ 100 (Communication)", "name": "Alphabet (Google)", "code": "GOOGL", "volume": 18000000, "per": "26.30", "pbr": "6.80", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "+3.10%", "upside": "+12.50%", "fair_value": "185.20", "opinion": "Buy", "grades": {"profit": "최고", "health": "우수", "growth": "우수"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Cyclical)", "name": "Amazon", "code": "AMZN", "volume": 28000000, "per": "42.10", "pbr": "8.50", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "-1.20%", "upside": "+15.80%", "fair_value": "210.45", "opinion": "Strong Buy", "grades": {"profit": "우수", "health": "보통", "growth": "최고"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Cyclical)", "name": "Tesla", "code": "TSLA", "volume": 85000000, "per": "45.60", "pbr": "9.20", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "-5.40%", "upside": "+20.15%", "fair_value": "245.00", "opinion": "Hold", "grades": {"profit": "보통", "health": "보통", "growth": "최고"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "Broadcom", "code": "AVGO", "volume": 3200000, "per": "32.10", "pbr": "11.40", "dividend": "1.40%", "is_profitable": "Pass (흑자)", "change_1m": "+4.20%", "upside": "+8.45%", "fair_value": "1450.00", "opinion": "Buy", "grades": {"profit": "최고", "health": "보통", "growth": "우수"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Defensive)", "name": "Costco", "code": "COST", "volume": 2100000, "per": "48.20", "pbr": "15.30", "dividend": "0.55%", "is_profitable": "Pass (흑자)", "change_1m": "+2.80%", "upside": "+5.20%", "fair_value": "780.00", "opinion": "Buy", "grades": {"profit": "우수", "health": "최고", "growth": "보통"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Communication)", "name": "Netflix", "code": "NFLX", "volume": 4500000, "per": "35.80", "pbr": "10.20", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "+6.20%", "upside": "+10.30%", "fair_value": "650.00", "opinion": "Buy", "grades": {"profit": "우수", "health": "보통", "growth": "우수"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "AMD", "code": "AMD", "volume": 65000000, "per": "75.10", "pbr": "4.80", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "-3.15%", "upside": "+18.20%", "fair_value": "205.00", "opinion": "Buy", "grades": {"profit": "보통", "health": "우수", "growth": "최고"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Consumer Defensive)", "name": "PepsiCo", "code": "PEP", "volume": 5200000, "per": "24.50", "pbr": "12.30", "dividend": "3.05%", "is_profitable": "Pass (흑자)", "change_1m": "+1.20%", "upside": "+6.50%", "fair_value": "185.00", "opinion": "Hold", "grades": {"profit": "우수", "health": "최고", "growth": "보통"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "Adobe", "code": "ADBE", "volume": 2800000, "per": "31.20", "pbr": "14.50", "dividend": "N/A", "is_profitable": "Pass (흑자)", "change_1m": "+2.40%", "upside": "+14.10%", "fair_value": "550.00", "opinion": "Buy", "grades": {"profit": "최고", "health": "우수", "growth": "보통"}},
+            {"theme": "미국 저평가 - NASDAQ 100 (Technology)", "name": "Intel", "code": "INTC", "volume": 42000000, "per": "N/A", "pbr": "1.10", "dividend": "1.52%", "is_profitable": "Fail (적자)", "change_1m": "-8.20%", "upside": "+35.00%", "fair_value": "45.00", "opinion": "Underperform", "grades": {"profit": "주의", "health": "보통", "growth": "주의"}}
         ]
         for u in ndq_fallbacks:
             results.append({**u, 'time': datetime.now().strftime('%Y-%m-%d %H:%M')})
