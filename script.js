@@ -28,40 +28,32 @@ function filterData(filter) {
         if (filter === 'Value') keyword = '국내 저평가';
         if (filter === 'US_SP') keyword = '미국 S&P500';
         if (filter === 'US_NDQ') keyword = '미국 나스닥';
+        if (filter === 'US_RSL') keyword = '미국 Russell 1000';
         btn.classList.toggle('active', btn.textContent.trim() === keyword);
     });
 
     if (filter === 'All') {
-        // 국내 저평가 및 미국 저평가 관련 모든 테마를 제외한 일반 국내 테마만 표시
-        const filtered = allData.filter(item => 
-            !item.theme.startsWith('국내 저평가') && 
-            !item.theme.startsWith('미국 저평가') &&
-            !item.theme.includes('S&P 500') &&
-            !item.theme.includes('NASDAQ 100') &&
-            item.theme !== '가치투자(저평가 턴어라운드)'
-        );
+        // 국내 주도 테마만 표시
+        const filtered = allData.filter(item => item.category === 'domestic_theme');
         render(filtered);
     } else if (filter === 'Pass') {
-        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && !item.theme.startsWith('국내 저평가') && !item.theme.includes('턴어라운드)'));
+        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && item.category === 'domestic_theme');
         render(filtered);
     } else if (filter === 'Value') {
-        // '국내 저평가'로 시작하거나 '가치투자' 포함 테마 필터링
-        const filtered = allData.filter(item => 
-            item.theme.startsWith('국내 저평가') || 
-            item.theme === '가치투자(저평가 턴어라운드)'
-        );
+        // 국내 저평가 카테고리 필터링
+        const filtered = allData.filter(item => item.category === 'domestic_value');
         render(filtered);
     } else if (filter === 'US_SP') {
-        // S&P 500 관련 모든 테마 필터링
-        const filtered = allData.filter(item => 
-            item.theme.includes('S&P 500')
-        );
+        // S&P 500 관련 필터링
+        const filtered = allData.filter(item => item.category === 'us_sp');
         render(filtered);
     } else if (filter === 'US_NDQ') {
-        // NASDAQ 관련 모든 테마 필터링
-        const filtered = allData.filter(item => 
-            item.theme.includes('NASDAQ')
-        );
+        // NASDAQ 관련 필터링
+        const filtered = allData.filter(item => item.category === 'us_ndq');
+        render(filtered);
+    } else if (filter === 'US_RSL') {
+        // Russell 1000 관련 필터링
+        const filtered = allData.filter(item => item.category === 'us_rsl');
         render(filtered);
     }
 }
