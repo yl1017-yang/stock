@@ -57,6 +57,11 @@ OPTIONAL_THEME_CONTEXT_KEYWORDS = [
     '인프라', '클라우드', '보안', '자동화', '스마트팩토리', '모빌리티',
     '친환경', '재생에너지', '수소', '탄소', '의료AI', '유전자', '첨단소재'
 ]
+POSITIVE_NEWS_KEYWORDS = ['수주', '투자', '증설', '공급', '계약', '흑자', '성장', '확대', '실적', '개발', '출시', '승인', '협력']
+NEGATIVE_NEWS_KEYWORDS = ['적자', '감자', '상장폐지', '소송', '조사', '리콜', '부진', '중단', '취소', '하락', '손실']
+NAVER_NEWS_CACHE = {}
+NAVER_DATALAB_CACHE = {}
+ALPHA_NEWS_CACHE = {}
 
 US_SECTOR_ETFS = {
     'XLK': 'Technology', 'XLV': 'Healthcare', 'XLC': 'Communication Services',
@@ -64,6 +69,24 @@ US_SECTOR_ETFS = {
     'XLP': 'Consumer Staples', 'XLE': 'Energy', 'XLB': 'Materials',
     'XLRE': 'Real Estate', 'XLU': 'Utilities'
 }
+
+def is_feature_enabled(flag_name, default=True):
+    value = os.getenv(flag_name)
+    if value is None:
+        return default
+    return value.lower() in ('1', 'true', 'yes', 'y', 'on')
+
+def strip_html(text):
+    return re.sub(r'<[^>]+>', '', text or '').replace('&quot;', '"').replace('&amp;', '&').strip()
+
+def get_interest_level(score):
+    if score >= 4:
+        return "강함"
+    if score >= 2:
+        return "보통"
+    if score > 0:
+        return "약함"
+    return "낮음"
 
 # 성장 키워드 점수는 보수적인 안전장치다. 키워드가 있으면 성장 후보 가능성이 높다고 보고 가산한다.
 def get_theme_keyword_score(theme_name):
@@ -74,6 +97,101 @@ def get_theme_keyword_score(theme_name):
         score += 2.0
     if any(kw in theme_name for kw in OLD_ECONOMY_KEYWORDS):
         score -= 8.0
+    return score
+
+# 네이버 뉴스 검색 API로 테마 관련 최근 뉴스의 양과 긍정/부정 키워드를 점수화한다.
+# 뉴스 점수는 보조 신호이며, 시장 점수나 키워드 점수 없이 단독으로 성장 테마를 확정하지 않는다.
+def get_naver_news_score(theme_name):
+    if theme_name in NAVER_NEWS_CACHE:
+        return NAVER_NEWS_CACHE[theme_name]
+
+    client_id = os.getenv('NAVER_CLIENT_ID')
+    client_secret = os.getenv('NAVER_CLIENT_SECRET')
+    if not client_id or not client_secret or not is_feature_enabled('ENABLE_NAVER_NEWS_SCORE', True):
+        NAVER_NEWS_CACHE[theme_name] = 0
+        return 0
+
+    try:
+        response = requests.get(
+            'https://openapi.naver.com/v1/search/news.json',
+            params={'query': theme_name, 'display': 10, 'start': 1, 'sort': 'date'},
+            headers={
+                'X-Naver-Client-Id': client_id,
+                'X-Naver-Client-Secret': client_secret
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        items = response.json().get('items', [])
+        texts = [strip_html(f"{item.get('title', '')} {item.get('description', '')}") for item in items]
+        positive_hits = sum(1 for text in texts if any(kw in text for kw in POSITIVE_NEWS_KEYWORDS))
+        negative_hits = sum(1 for text in texts if any(kw in text for kw in NEGATIVE_NEWS_KEYWORDS))
+        growth_hits = sum(1 for text in texts if any(kw in text for kw in CORE_GROWTH_KEYWORDS + OPTIONAL_THEME_CONTEXT_KEYWORDS))
+
+        score = min(len(items) / 5, 2.0)
+        score += min(positive_hits, 3) * 0.5
+        score += min(growth_hits, 2) * 0.5
+        score -= min(negative_hits, 3) * 0.7
+        score = max(-2.0, min(score, 4.0))
+    except Exception:
+        score = 0
+
+    NAVER_NEWS_CACHE[theme_name] = score
+    return score
+
+# 네이버 데이터랩 검색어 트렌드 API로 최근 검색 관심도 상승 여부를 점수화한다.
+# 검색량은 관심 회복 보조 지표로만 사용하고, 가격/수급 검증을 대체하지 않는다.
+def get_naver_datalab_score(theme_name):
+    if theme_name in NAVER_DATALAB_CACHE:
+        return NAVER_DATALAB_CACHE[theme_name]
+
+    client_id = os.getenv('NAVER_CLIENT_ID')
+    client_secret = os.getenv('NAVER_CLIENT_SECRET')
+    if not client_id or not client_secret or not is_feature_enabled('ENABLE_NAVER_DATALAB_SCORE', True):
+        NAVER_DATALAB_CACHE[theme_name] = 0
+        return 0
+
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=30)
+    try:
+        response = requests.post(
+            'https://openapi.naver.com/v1/datalab/search',
+            headers={
+                'X-Naver-Client-Id': client_id,
+                'X-Naver-Client-Secret': client_secret,
+                'Content-Type': 'application/json'
+            },
+            json={
+                'startDate': start_date.strftime('%Y-%m-%d'),
+                'endDate': end_date.strftime('%Y-%m-%d'),
+                'timeUnit': 'date',
+                'keywordGroups': [{'groupName': theme_name, 'keywords': [theme_name]}]
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        data = response.json().get('results', [{}])[0].get('data', [])
+        ratios = [float(item.get('ratio', 0)) for item in data]
+        if len(ratios) < 14:
+            score = 0
+        else:
+            recent_avg = sum(ratios[-7:]) / 7
+            previous_avg = sum(ratios[-14:-7]) / 7
+            latest = ratios[-1]
+            score = 0
+            if previous_avg > 0 and recent_avg >= previous_avg * 1.2:
+                score += 1.5
+            elif previous_avg > 0 and recent_avg >= previous_avg * 1.05:
+                score += 0.8
+            if latest >= recent_avg:
+                score += 0.5
+            if recent_avg >= 40:
+                score += 0.5
+            score = min(score, 3.0)
+    except Exception:
+        score = 0
+
+    NAVER_DATALAB_CACHE[theme_name] = score
     return score
 
 # 네이버 테마 시장 데이터만으로 자동 후보 점수를 계산한다.
@@ -102,12 +220,18 @@ def get_auto_theme_market_score(theme_change, change_rank, total_count):
 
     return score
 
-# 뉴스/LLM 점수는 보조 신호다. 기본값은 꺼져 있으며, 켜져 있어도 단독으로 최종 채택하지 않는다.
-# 실제 API 연결 전까지는 테마명 주변 키워드와 환경 변수 기반 가산점만 제공하는 안전한 확장 지점으로 둔다.
+# 뉴스/검색 점수는 보조 신호다. API 키가 있으면 자동 반영하고, 명시적으로 false를 주면 끈다.
+# 이 점수는 단독 채택 기준이 아니며 시장 점수와 함께 검증될 때만 growth_focus에 영향을 준다.
 def get_optional_theme_context_score(theme_name):
-    if os.getenv('ENABLE_THEME_CONTEXT_SCORE', '').lower() != 'true':
+    if not is_feature_enabled('ENABLE_THEME_CONTEXT_SCORE', True):
         return 0
-    return 2.0 if any(kw in theme_name for kw in OPTIONAL_THEME_CONTEXT_KEYWORDS) else 0
+
+    score = 0
+    if any(kw in theme_name for kw in OPTIONAL_THEME_CONTEXT_KEYWORDS):
+        score += 1.0
+    score += get_naver_news_score(theme_name)
+    score += get_naver_datalab_score(theme_name)
+    return max(-2.0, min(score, 5.0))
 
 # 최종 검증 단계다. 키워드, 자동 시장 점수, 보조 점수 중 하나만 맹신하지 않고
 # 구경제 감점과 최소 시장 강도를 함께 확인한 테마만 저평가 탐색 대상으로 사용한다.
@@ -163,6 +287,8 @@ def get_automated_growth_themes():
     if df.empty:
         return df, df
 
+    df['interest_score'] = df['auto_market_score'] + df['context_score']
+    df['interest_level'] = df['interest_score'].apply(get_interest_level)
     top_display = df.sort_values(by='change', ascending=False).head(10)
     verified_df = df[df.apply(lambda row: is_verified_growth_theme(row), axis=1)]
     growth_focus = verified_df.sort_values(by='score', ascending=False).head(20)
@@ -223,6 +349,8 @@ def get_top_theme_stocks(top_themes):
                     'upside': upside_str,
                     'fair_value': adv['target_price'],
                     'current_price': adv['current_price'],
+                    'interest_level': theme.get('interest_level', 'N/A'),
+                    'interest_score': round(float(theme.get('interest_score', 0)), 2),
                     'opinion': adv['opinion'],
                     'grades': adv['grades'],
                     'is_profitable': "Pass (주도 테마)",
@@ -427,16 +555,19 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                     ma20 = df_ohlcv['종가'].rolling(window=20).mean().iloc[-1]
                     ma60 = df_ohlcv['종가'].rolling(window=60).mean().iloc[-1]
                     recent_volume = df_ohlcv['거래량'].iloc[-5:].mean()
-                    base_volume = df_ohlcv['거래량'].iloc[-20:].mean()
-                    volume_recovering = base_volume > 0 and recent_volume >= (base_volume * 0.8)
+                    base_volume_20 = df_ohlcv['거래량'].iloc[-20:].mean()
+                    base_volume_60 = df_ohlcv['거래량'].iloc[-60:].mean()
+                    volume_recovering = base_volume_20 > 0 and recent_volume >= (base_volume_20 * 0.8)
+                    medium_volume_ok = base_volume_60 > 0 and df_ohlcv['거래량'].iloc[-20:].mean() >= (base_volume_60 * 0.7)
                     month_return = (curr_p / df_ohlcv['종가'].iloc[-20] - 1) * 100 if len(df_ohlcv) >= 20 else 0
+                    quarter_return = (curr_p / df_ohlcv['종가'].iloc[-60] - 1) * 100
                     
                     target_p = adv['target_price']
                     upside_val = ((float(target_p) / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
 
                     # 성장 저평가 점수:
-                    # 밸류에이션, 목표가 상승여력, 이평선 회복, 1개월 모멘텀,
-                    # 거래 회복을 가산하고 과도한 소외/목표가 괴리는 감점한다.
+                    # 밸류에이션, 목표가 상승여력, 이평선 회복, 3개월 중기 흐름,
+                    # 1개월 진입 타이밍, 거래 회복을 가산하고 과도한 소외/목표가 괴리는 감점한다.
                     score = 0
                     if per <= 25: score += 2
                     elif per <= 35: score += 1
@@ -446,11 +577,15 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                     elif 40 < upside_val <= 70: score += 1
                     if curr_p >= ma20: score += 2
                     if curr_p >= ma60: score += 1
+                    if quarter_return > 0: score += 2
+                    elif quarter_return > -15: score += 1
                     if month_return > 0: score += 2
                     elif month_return > -5: score += 1
                     if volume_recovering: score += 1
+                    if medium_volume_ok: score += 1
                     if trading_value >= 3_000_000_000: score += 1
                     if drawdown > 0.50: score -= 3
+                    if quarter_return < -15: score -= 2
                     if month_return < -10: score -= 2
                     if upside_val > 80: score -= 1
 
@@ -461,18 +596,24 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                         and upside_val >= 12
                         and trading_value >= 1_000_000_000
                         and (curr_p >= ma20 or curr_p >= ma60)
+                        and quarter_return > -15
                         and month_return > -10
+                        and medium_volume_ok
                     )
 
                     if is_growth_value:
+                        interest_score = _safe_float(theme.get('interest_score'))
                         results.append({
                             'category': 'domestic_value',
                             'theme': theme['name'], 
                             'name': s['name'], 'code': code,
                             'volume': volume, 'change_1m': f"{month_return:+.2f}%",
+                            'change_3m': f"{quarter_return:+.2f}%",
                             'per': f"{per:.2f}", 'pbr': f"{pbr:.2f}", 'dividend': div,
                             'upside': f"{upside_val:+.2f}%" if upside_val != 0 else "N/A", 'fair_value': target_p,
                             'current_price': curr_p,
+                            'interest_level': theme.get('interest_level', get_interest_level(interest_score)),
+                            'interest_score': round(interest_score, 2),
                             'opinion': adv['opinion'], 'grades': adv['grades'], 'is_profitable': "Pass (성장 저평가)",
                             'time': datetime.now().strftime('%Y-%m-%d %H:%M')
                         })
@@ -497,6 +638,66 @@ def get_us_leading_sectors():
                 sector_returns[name] = (hist['Close'].iloc[-1] / hist['Close'].iloc[0]) - 1
         except: continue
     return [s[0] for s in sorted(sector_returns.items(), key=lambda x: x[1], reverse=True)[:3]]
+
+# Alpha Vantage NEWS_SENTIMENT로 미국 종목의 뉴스/심리 보조 점수를 계산한다.
+# 가격, 재무, 수급 조건을 대체하지 않고 미국 성장 저평가 점수에 최대 +2점만 반영한다.
+def get_alpha_news_score(ticker, sector=None):
+    if ticker in ALPHA_NEWS_CACHE:
+        return ALPHA_NEWS_CACHE[ticker]
+
+    api_key = os.getenv('ALPHA_VANTAGE_API_KEY')
+    if not api_key or not is_feature_enabled('ENABLE_ALPHA_NEWS_SCORE', True):
+        ALPHA_NEWS_CACHE[ticker] = 0
+        return 0
+
+    try:
+        response = requests.get(
+            'https://www.alphavantage.co/query',
+            params={
+                'function': 'NEWS_SENTIMENT',
+                'tickers': ticker,
+                'sort': 'LATEST',
+                'limit': 10,
+                'apikey': api_key
+            },
+            timeout=8
+        )
+        response.raise_for_status()
+        payload = response.json()
+        feed = payload.get('feed', [])
+        if not feed:
+            ALPHA_NEWS_CACHE[ticker] = 0
+            return 0
+
+        relevance_scores = []
+        sentiment_scores = []
+        overall_scores = []
+        for article in feed:
+            overall_scores.append(_safe_float(article.get('overall_sentiment_score')))
+            for item in article.get('ticker_sentiment', []):
+                if item.get('ticker') == ticker:
+                    relevance_scores.append(_safe_float(item.get('relevance_score')))
+                    sentiment_scores.append(_safe_float(item.get('ticker_sentiment_score')))
+
+        avg_relevance = sum(relevance_scores) / len(relevance_scores) if relevance_scores else 0
+        avg_sentiment = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else 0
+        avg_overall = sum(overall_scores) / len(overall_scores) if overall_scores else 0
+
+        score = 0
+        if len(feed) >= 5:
+            score += 0.5
+        if avg_relevance >= 0.30:
+            score += 0.5
+        if avg_sentiment >= 0.15 or avg_overall >= 0.15:
+            score += 1.0
+        elif avg_sentiment <= -0.15 or avg_overall <= -0.15:
+            score -= 1.0
+        score = max(-1.0, min(score, 2.0))
+    except Exception:
+        score = 0
+
+    ALPHA_NEWS_CACHE[ticker] = score
+    return score
 
 # 10. 미국 성장 저평가주 탐색
 # S&P500, NASDAQ100, Russell1000 후보를 같은 GARP 기준으로 평가한다.
@@ -537,10 +738,14 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
             ticker_hist = ticker.history(period="3mo")
             if ticker_hist.empty or len(ticker_hist) < 50: continue
             month_return = (ticker_hist['Close'].iloc[-1] / ticker_hist['Close'].iloc[-20] - 1) * 100
+            quarter_return = (ticker_hist['Close'].iloc[-1] / ticker_hist['Close'].iloc[0] - 1) * 100
             ma20 = ticker_hist['Close'].rolling(window=20).mean().iloc[-1]
             ma50 = ticker_hist['Close'].rolling(window=50).mean().iloc[-1]
             volume = int(info.get('volume') or ticker_hist['Volume'].iloc[-1] or 0)
-            volume_recovering = ticker_hist['Volume'].iloc[-5:].mean() >= (ticker_hist['Volume'].iloc[-20:].mean() * 0.8)
+            base_volume_20 = ticker_hist['Volume'].iloc[-20:].mean()
+            base_volume_60 = ticker_hist['Volume'].mean()
+            volume_recovering = base_volume_20 > 0 and ticker_hist['Volume'].iloc[-5:].mean() >= (base_volume_20 * 0.8)
+            medium_volume_ok = base_volume_60 > 0 and base_volume_20 >= (base_volume_60 * 0.7)
 
             target_p = info.get('targetMeanPrice', "N/A")
             upside_val = ((target_p / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
@@ -555,7 +760,7 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
 
             # 미국 성장 저평가 점수:
             # Forward PE 개선, 매출/EPS 성장, 합리적 PER/PBR, 목표가 상승여력,
-            # 이평선/모멘텀 회복, 주도 섹터 여부를 반영한다.
+            # 3개월 중기 흐름, 1개월 진입 타이밍, 이평선/거래량 회복, 주도 섹터 여부를 반영한다.
             score = 0
             if forward_pe > 0 and forward_pe < pe: score += 2
             if revenue_growth > 0.05: score += 2
@@ -570,20 +775,28 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
             elif 45 < upside_val <= 80: score += 1
             if curr_p >= ma20: score += 2
             if curr_p >= ma50: score += 1
+            if quarter_return > 0: score += 2
+            elif quarter_return > -15: score += 1
             if month_return > 0: score += 2
             elif month_return > -5: score += 1
             if volume_recovering: score += 1
+            if medium_volume_ok: score += 1
             if sector in leading_sectors: score += 1
+            alpha_news_score = get_alpha_news_score(ticker_str, sector)
+            score += alpha_news_score
             if drawdown > 0.50: score -= 3
+            if quarter_return < -15: score -= 2
             if month_return < -10: score -= 2
             if upside_val > 90: score -= 1
 
-            # 점수가 높아도 상승여력, 최근 모멘텀, 이평선 회복 중 핵심 조건이 약하면 제외한다.
+            # 점수가 높아도 상승여력, 3개월 흐름, 최근 진입 타이밍, 수급 회복 중 핵심 조건이 약하면 제외한다.
             if not (
                 score >= 8
                 and upside_val >= 12
+                and quarter_return > -15
                 and month_return > -10
                 and (curr_p >= ma20 or curr_p >= ma50)
+                and medium_volume_ok
             ):
                 continue
             
@@ -604,10 +817,13 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
                 'theme': sector, # 섹터명을 테마로 사용
                 'name': info.get('shortName', ticker_str), 'code': ticker_str,
                 'volume': volume, 'change_1m': f"{month_return:+.2f}%",
+                'change_3m': f"{quarter_return:+.2f}%",
                 'per': f"{pe:.2f}", 'pbr': f"{pb:.2f}",
                 'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
                 'upside': f"{upside_val:+.2f}%", 'fair_value': str(target_p),
                 'current_price': curr_p,
+                'interest_level': get_interest_level(alpha_news_score * 2),
+                'interest_score': round(alpha_news_score, 2),
                 'opinion': info.get('recommendationKey', "N/A").replace('_', ' ').title(),
                 'grades': grades, 'is_profitable': "Pass (성장 저평가)",
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M')

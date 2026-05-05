@@ -83,10 +83,15 @@ function render(data) {
             if (s.is_profitable.includes('Pass')) statusClass = 'status-pass';
             else if (s.is_profitable.includes('Fail')) statusClass = 'status-fail';
 
-            const isUp = s.change_1m && s.change_1m.includes('+');
-            const isDown = s.change_1m && s.change_1m.includes('-');
-            const changeClass = isUp ? 'up' : (isDown ? 'down' : '');
-            const changeHtml = s.change_1m ? `<span class="change-val ${changeClass}">${s.change_1m}</span>` : '';
+            const getChangeBadge = (label, value) => {
+                if (!value) return '';
+                const changeClass = value.includes('+') ? 'up' : (value.includes('-') ? 'down' : '');
+                return `<span class="change-val ${changeClass}">${label} ${value}</span>`;
+            };
+            const changeHtml = `${getChangeBadge('1M', s.change_1m)}${getChangeBadge('3M', s.change_3m)}`;
+            const interestHtml = s.interest_level && s.interest_level !== 'N/A'
+                ? `<span class="interest-badge interest-${s.interest_level}">관심도:${s.interest_level}</span>`
+                : '';
 
             // 프리미엄 지표 HTML 생성
             let premiumHtml = '';
@@ -116,6 +121,7 @@ function render(data) {
                         <span class="grade-badge ${getGradeClass(s.grades.profit)}">수익:${s.grades.profit}</span>
                         <span class="grade-badge ${getGradeClass(s.grades.health)}">재무:${s.grades.health}</span>
                         <span class="grade-badge ${getGradeClass(s.grades.growth)}">성장:${s.grades.growth}</span>
+                        ${interestHtml}
                         ${s.opinion && s.opinion !== 'N/A' ? `<span class="opinion-badge">${s.opinion}</span>` : ''}
                     </div>
                 `;
