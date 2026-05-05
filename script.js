@@ -92,9 +92,10 @@ function render(data) {
             let premiumHtml = '';
             if (s.upside && s.upside !== "N/A") {
                 const fairValue = s.fair_value && s.fair_value !== "N/A" ? Number(s.fair_value).toLocaleString() : "분석중";
+                const currentPrice = s.current_price ? Number(s.current_price).toLocaleString() : "N/A";
                 premiumHtml = `
                     <div class="upside-row">
-                        <span class="fair-value">적정가 ${fairValue}</span>
+                        <span class="fair-value">적정가 ${fairValue} <span style="margin-left: 8px; opacity: 0.6;">현재가 ${currentPrice}</span></span>
                         <span class="upside-badge">${s.upside} 여력</span>
                     </div>
                 `;

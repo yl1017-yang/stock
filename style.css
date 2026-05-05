@@ -95,7 +95,7 @@ h1 {
 /* 격자 레이아웃 */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 25px;
     width: 100%;
     max-width: 1400px;
@@ -106,7 +106,7 @@ h1 {
     backdrop-filter: blur(15px);
     border: 1px solid var(--card-border);
     border-radius: 24px;
-    padding: 24px;
+    padding: 16px;
     position: relative;
     overflow: hidden;
     animation: cardAppear 0.5s ease-out forwards;
