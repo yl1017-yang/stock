@@ -21,7 +21,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -45,7 +45,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -69,7 +69,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -93,7 +93,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -117,7 +117,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -141,7 +141,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -165,7 +165,7 @@
       "growth": "최고"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -189,7 +189,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -213,7 +213,7 @@
       "growth": "최고"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -237,7 +237,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -261,7 +261,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -285,7 +285,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -309,7 +309,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -333,7 +333,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:56"
   },
   {
     "category": "domestic_theme",
@@ -357,7 +357,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -381,7 +381,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -405,7 +405,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -429,7 +429,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -453,7 +453,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -477,7 +477,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -493,7 +493,7 @@
     "fair_value": "566706",
     "current_price": 422500.0,
     "interest_level": "강함",
-    "interest_score": 10.0,
+    "interest_score": 9.1,
     "opinion": "3.94매수",
     "grades": {
       "profit": "최고",
@@ -501,7 +501,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -517,7 +517,7 @@
     "fair_value": "316000",
     "current_price": 262000.0,
     "interest_level": "강함",
-    "interest_score": 10.0,
+    "interest_score": 9.1,
     "opinion": "3.94매수",
     "grades": {
       "profit": "최고",
@@ -525,7 +525,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -541,7 +541,7 @@
     "fair_value": "N/A",
     "current_price": 206500.0,
     "interest_level": "강함",
-    "interest_score": 10.0,
+    "interest_score": 9.1,
     "opinion": "N/A",
     "grades": {
       "profit": "보통",
@@ -549,7 +549,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -565,7 +565,7 @@
     "fair_value": "132889",
     "current_price": 137900.0,
     "interest_level": "강함",
-    "interest_score": 10.0,
+    "interest_score": 9.1,
     "opinion": "4.00매수",
     "grades": {
       "profit": "최고",
@@ -573,7 +573,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -589,7 +589,7 @@
     "fair_value": "N/A",
     "current_price": 76400.0,
     "interest_level": "강함",
-    "interest_score": 10.0,
+    "interest_score": 9.1,
     "opinion": "N/A",
     "grades": {
       "profit": "보통",
@@ -597,7 +597,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -621,7 +621,7 @@
       "growth": "최고"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -645,7 +645,7 @@
       "growth": "최고"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -669,7 +669,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -693,7 +693,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -717,7 +717,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -741,7 +741,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -765,7 +765,7 @@
       "growth": "최고"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_theme",
@@ -789,32 +789,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-05-05 17:18"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "증권",
-    "name": "한국금융지주",
-    "code": "071050",
-    "volume": 446872,
-    "change_1m": "+21.86%",
-    "change_3m": "+19.91%",
-    "per": "7.99",
-    "pbr": "1.27",
-    "dividend": "N/A",
-    "upside": "+20.61%",
-    "fair_value": "316000",
-    "current_price": 262000,
-    "interest_level": "강함",
-    "interest_score": 10.0,
-    "opinion": "3.94매수",
-    "grades": {
-      "profit": "최고",
-      "health": "보통",
-      "growth": "우수"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:19"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_value",
@@ -831,7 +806,7 @@
     "fair_value": "112833",
     "current_price": 86700,
     "interest_level": "강함",
-    "interest_score": 7.0,
+    "interest_score": 6.8,
     "opinion": "4.00매수",
     "grades": {
       "profit": "최고",
@@ -839,7 +814,32 @@
       "growth": "최고"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:19"
+    "time": "2026-05-05 17:57"
+  },
+  {
+    "category": "domestic_value",
+    "theme": "증권",
+    "name": "한국금융지주",
+    "code": "071050",
+    "volume": 446872,
+    "change_1m": "+21.86%",
+    "change_3m": "+19.91%",
+    "per": "7.99",
+    "pbr": "1.27",
+    "dividend": "N/A",
+    "upside": "+20.61%",
+    "fair_value": "316000",
+    "current_price": 262000,
+    "interest_level": "강함",
+    "interest_score": 9.1,
+    "opinion": "3.94매수",
+    "grades": {
+      "profit": "최고",
+      "health": "보통",
+      "growth": "우수"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "domestic_value",
@@ -864,7 +864,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:19"
+    "time": "2026-05-05 17:57"
   },
   {
     "category": "us_theme",
@@ -889,7 +889,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -914,7 +914,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -939,7 +939,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -964,7 +964,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -989,7 +989,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -1014,7 +1014,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1039,7 +1039,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1064,7 +1064,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1074,7 +1074,7 @@
     "volume": 9949900,
     "change_1m": "+16.30%",
     "change_3m": "+21.77%",
-    "per": "34.12",
+    "per": "34.47",
     "pbr": "61.43",
     "dividend": "88.00%",
     "upside": "+15.40%",
@@ -1089,7 +1089,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1114,7 +1114,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1139,7 +1139,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -1164,7 +1164,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -1189,7 +1189,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -1214,7 +1214,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -1239,7 +1239,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_theme",
@@ -1264,7 +1264,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1289,7 +1289,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1314,7 +1314,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1339,7 +1339,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1364,7 +1364,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1389,7 +1389,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1414,7 +1414,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1439,7 +1439,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1464,7 +1464,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1489,7 +1489,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:20"
+    "time": "2026-05-05 17:58"
   },
   {
     "category": "us_theme",
@@ -1514,7 +1514,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-05-05 17:21"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_sp",
@@ -1539,7 +1539,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:22"
+    "time": "2026-05-05 17:59"
   },
   {
     "category": "us_sp",
@@ -1564,7 +1564,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:22"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1589,7 +1589,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:22"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1601,7 +1601,7 @@
     "change_3m": "-11.84%",
     "per": "11.68",
     "pbr": "6.53",
-    "dividend": "146.00%",
+    "dividend": "145.00%",
     "upside": "+15.20%",
     "fair_value": "539.8182",
     "current_price": 468.59,
@@ -1614,7 +1614,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:22"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1639,7 +1639,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:22"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1664,7 +1664,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:23"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1689,7 +1689,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:23"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1714,7 +1714,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:23"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1739,7 +1739,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:23"
+    "time": "2026-05-05 18:00"
   },
   {
     "category": "us_sp",
@@ -1749,7 +1749,7 @@
     "volume": 800059,
     "change_1m": "+13.31%",
     "change_3m": "-6.00%",
-    "per": "29.89",
+    "per": "29.44",
     "pbr": "1.80",
     "dividend": "519.00%",
     "upside": "+18.47%",
@@ -1764,7 +1764,32 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:23"
+    "time": "2026-05-05 18:01"
+  },
+  {
+    "category": "us_sp",
+    "theme": "Industrials",
+    "name": "Carrier Global Corporation",
+    "code": "CARR",
+    "volume": 4062201,
+    "change_1m": "+19.27%",
+    "change_3m": "+4.79%",
+    "per": "43.93",
+    "pbr": "4.07",
+    "dividend": "142.00%",
+    "upside": "+13.81%",
+    "fair_value": "74.99043",
+    "current_price": 65.89,
+    "interest_level": "낮음",
+    "interest_score": 0,
+    "opinion": "Buy",
+    "grades": {
+      "profit": "보통",
+      "health": "우수",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-05-05 18:01"
   },
   {
     "category": "us_sp",
@@ -1789,7 +1814,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:24"
+    "time": "2026-05-05 18:01"
   },
   {
     "category": "us_sp",
@@ -1814,7 +1839,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:24"
+    "time": "2026-05-05 18:01"
   },
   {
     "category": "us_sp",
@@ -1839,7 +1864,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:24"
+    "time": "2026-05-05 18:01"
   },
   {
     "category": "us_sp",
@@ -1864,7 +1889,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:24"
+    "time": "2026-05-05 18:02"
   },
   {
     "category": "us_sp",
@@ -1889,7 +1914,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:24"
+    "time": "2026-05-05 18:02"
   },
   {
     "category": "us_sp",
@@ -1914,7 +1939,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:25"
+    "time": "2026-05-05 18:02"
   },
   {
     "category": "us_sp",
@@ -1939,7 +1964,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:25"
+    "time": "2026-05-05 18:02"
   },
   {
     "category": "us_sp",
@@ -1964,7 +1989,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:25"
+    "time": "2026-05-05 18:03"
   },
   {
     "category": "us_sp",
@@ -1989,7 +2014,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:26"
+    "time": "2026-05-05 18:03"
   },
   {
     "category": "us_sp",
@@ -2014,7 +2039,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:26"
+    "time": "2026-05-05 18:03"
   },
   {
     "category": "us_sp",
@@ -2039,7 +2064,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:26"
+    "time": "2026-05-05 18:03"
   },
   {
     "category": "us_sp",
@@ -2064,7 +2089,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:26"
+    "time": "2026-05-05 18:03"
   },
   {
     "category": "us_sp",
@@ -2089,7 +2114,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:27"
+    "time": "2026-05-05 18:03"
   },
   {
     "category": "us_sp",
@@ -2101,7 +2126,7 @@
     "change_3m": "-14.17%",
     "per": "12.43",
     "pbr": "1.10",
-    "dividend": "373.00%",
+    "dividend": "384.00%",
     "upside": "+22.11%",
     "fair_value": "19.73333",
     "current_price": 16.16,
@@ -2114,7 +2139,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:27"
+    "time": "2026-05-05 18:04"
   },
   {
     "category": "us_sp",
@@ -2139,7 +2164,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:27"
+    "time": "2026-05-05 18:04"
   },
   {
     "category": "us_sp",
@@ -2164,7 +2189,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:28"
+    "time": "2026-05-05 18:04"
   },
   {
     "category": "us_sp",
@@ -2174,7 +2199,7 @@
     "volume": 7953766,
     "change_1m": "+13.35%",
     "change_3m": "+3.98%",
-    "per": "21.54",
+    "per": "21.39",
     "pbr": "1.55",
     "dividend": "316.00%",
     "upside": "+15.17%",
@@ -2189,7 +2214,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:28"
+    "time": "2026-05-05 18:04"
   },
   {
     "category": "us_sp",
@@ -2214,7 +2239,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:28"
+    "time": "2026-05-05 18:04"
   },
   {
     "category": "us_sp",
@@ -2239,32 +2264,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:29"
-  },
-  {
-    "category": "us_sp",
-    "theme": "Technology",
-    "name": "Microsoft Corporation",
-    "code": "MSFT",
-    "volume": 26572430,
-    "change_1m": "+11.10%",
-    "change_3m": "+5.31%",
-    "per": "24.63",
-    "pbr": "7.86",
-    "dividend": "88.00%",
-    "upside": "+35.58%",
-    "fair_value": "560.7736",
-    "current_price": 413.62,
-    "interest_level": "낮음",
-    "interest_score": 0,
-    "opinion": "Strong Buy",
-    "grades": {
-      "profit": "최고",
-      "health": "최고",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:29"
+    "time": "2026-05-05 18:05"
   },
   {
     "category": "us_ndq",
@@ -2289,7 +2289,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:29"
+    "time": "2026-05-05 18:05"
   },
   {
     "category": "us_ndq",
@@ -2314,7 +2314,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:29"
+    "time": "2026-05-05 18:05"
   },
   {
     "category": "us_ndq",
@@ -2339,7 +2339,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:30"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_ndq",
@@ -2349,7 +2349,7 @@
     "volume": 7953766,
     "change_1m": "+13.35%",
     "change_3m": "+3.98%",
-    "per": "21.54",
+    "per": "21.39",
     "pbr": "1.55",
     "dividend": "316.00%",
     "upside": "+15.17%",
@@ -2364,7 +2364,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:30"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_ndq",
@@ -2389,7 +2389,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:30"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_ndq",
@@ -2414,7 +2414,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:30"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_ndq",
@@ -2439,7 +2439,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:30"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_ndq",
@@ -2464,7 +2464,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:31"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_rsl",
@@ -2489,7 +2489,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:31"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_rsl",
@@ -2514,7 +2514,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:31"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_rsl",
@@ -2539,7 +2539,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:31"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_rsl",
@@ -2564,7 +2564,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:31"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_rsl",
@@ -2589,7 +2589,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:31"
+    "time": "2026-05-05 18:06"
   },
   {
     "category": "us_rsl",
@@ -2614,7 +2614,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:31"
+    "time": "2026-05-05 18:07"
   },
   {
     "category": "us_rsl",
@@ -2639,7 +2639,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:32"
+    "time": "2026-05-05 18:07"
   },
   {
     "category": "us_rsl",
@@ -2664,7 +2664,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:32"
+    "time": "2026-05-05 18:07"
   },
   {
     "category": "us_rsl",
@@ -2689,7 +2689,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:32"
+    "time": "2026-05-05 18:07"
   },
   {
     "category": "us_rsl",
@@ -2699,7 +2699,7 @@
     "volume": 3488317,
     "change_1m": "-2.78%",
     "change_3m": "+16.78%",
-    "per": "12.59",
+    "per": "12.79",
     "pbr": "1.62",
     "dividend": "N/A",
     "upside": "+26.37%",
@@ -2714,7 +2714,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:32"
+    "time": "2026-05-05 18:07"
   },
   {
     "category": "us_rsl",
@@ -2724,7 +2724,7 @@
     "volume": 737835,
     "change_1m": "+4.72%",
     "change_3m": "-5.12%",
-    "per": "13.68",
+    "per": "13.53",
     "pbr": "1.94",
     "dividend": "145.00%",
     "upside": "+13.48%",
@@ -2739,7 +2739,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:32"
+    "time": "2026-05-05 18:07"
   },
   {
     "category": "us_rsl",
@@ -2764,7 +2764,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:33"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2789,7 +2789,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:33"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2814,7 +2814,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:33"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2839,7 +2839,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:33"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2864,7 +2864,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:33"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2889,7 +2889,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:33"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2914,7 +2914,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:34"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2924,7 +2924,7 @@
     "volume": 800059,
     "change_1m": "+13.31%",
     "change_3m": "-6.00%",
-    "per": "29.89",
+    "per": "29.44",
     "pbr": "1.80",
     "dividend": "519.00%",
     "upside": "+18.47%",
@@ -2939,7 +2939,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:34"
+    "time": "2026-05-05 18:08"
   },
   {
     "category": "us_rsl",
@@ -2949,7 +2949,7 @@
     "volume": 3176458,
     "change_1m": "+6.32%",
     "change_3m": "-9.23%",
-    "per": "22.71",
+    "per": "22.92",
     "pbr": "3.10",
     "dividend": "283.00%",
     "upside": "+23.70%",
@@ -2964,7 +2964,32 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:34"
+    "time": "2026-05-05 18:09"
+  },
+  {
+    "category": "us_rsl",
+    "theme": "Industrials",
+    "name": "Carrier Global Corporation",
+    "code": "CARR",
+    "volume": 4062201,
+    "change_1m": "+19.27%",
+    "change_3m": "+4.79%",
+    "per": "43.93",
+    "pbr": "4.07",
+    "dividend": "142.00%",
+    "upside": "+13.81%",
+    "fair_value": "74.99043",
+    "current_price": 65.89,
+    "interest_level": "낮음",
+    "interest_score": 0,
+    "opinion": "Buy",
+    "grades": {
+      "profit": "보통",
+      "health": "우수",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-05-05 18:09"
   },
   {
     "category": "us_rsl",
@@ -2989,7 +3014,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:34"
+    "time": "2026-05-05 18:09"
   },
   {
     "category": "us_rsl",
@@ -3014,7 +3039,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:35"
+    "time": "2026-05-05 18:09"
   },
   {
     "category": "us_rsl",
@@ -3039,7 +3064,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:35"
+    "time": "2026-05-05 18:09"
   },
   {
     "category": "us_rsl",
@@ -3064,7 +3089,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:35"
+    "time": "2026-05-05 18:09"
   },
   {
     "category": "us_rsl",
@@ -3089,7 +3114,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:35"
+    "time": "2026-05-05 18:09"
   },
   {
     "category": "us_rsl",
@@ -3114,7 +3139,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:35"
+    "time": "2026-05-05 18:10"
   },
   {
     "category": "us_rsl",
@@ -3139,7 +3164,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:35"
+    "time": "2026-05-05 18:10"
   },
   {
     "category": "us_rsl",
@@ -3164,7 +3189,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:35"
+    "time": "2026-05-05 18:10"
   },
   {
     "category": "us_rsl",
@@ -3189,31 +3214,6 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:36"
-  },
-  {
-    "category": "us_rsl",
-    "theme": "Technology",
-    "name": "DocuSign, Inc.",
-    "code": "DOCU",
-    "volume": 3181753,
-    "change_1m": "+2.30%",
-    "change_3m": "+6.39%",
-    "per": "32.30",
-    "pbr": "5.00",
-    "dividend": "N/A",
-    "upside": "+24.18%",
-    "fair_value": "60.16444",
-    "current_price": 48.45,
-    "interest_level": "낮음",
-    "interest_score": 0,
-    "opinion": "None",
-    "grades": {
-      "profit": "최고",
-      "health": "최고",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-05-05 17:36"
+    "time": "2026-05-05 18:10"
   }
 ]

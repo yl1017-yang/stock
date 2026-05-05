@@ -14,6 +14,7 @@ import io
 import ssl
 import time
 import sys
+from kakao_api import send_kakao_message
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -516,6 +517,66 @@ def _safe_float(value, default=0):
     except:
         return default
 
+def _compact_name(name, max_len=10):
+    text = str(name or "N/A").strip()
+    return text if len(text) <= max_len else text[:max_len - 1] + "…"
+
+def _sort_by_1m_return(items):
+    return sorted(items, key=lambda item: _safe_float(item.get('change_1m')), reverse=True)
+
+def _format_alert_line(item, index):
+    name = _compact_name(item.get('name'))
+    change_1m = item.get('change_1m') or "N/A"
+    upside = item.get('upside') if item.get('upside') != "N/A" else ""
+    suffix = f" / {upside}" if upside else ""
+    return f"{index}. {name} {change_1m}{suffix}"
+
+def _split_kakao_text(title, lines, max_len=180):
+    messages = []
+    current = title
+    for line in lines:
+        candidate = f"{current}\n{line}"
+        if len(candidate) > max_len and current != title:
+            messages.append(current)
+            current = f"{title}\n{line}"
+        else:
+            current = candidate
+    if current != title:
+        messages.append(current)
+    return messages
+
+def _unique_by_code(items):
+    seen = set()
+    unique_items = []
+    for item in items:
+        key = item.get('code') or item.get('name')
+        if key in seen:
+            continue
+        seen.add(key)
+        unique_items.append(item)
+    return unique_items
+
+def build_kakao_alert_messages(results):
+    us_value_items = _unique_by_code([
+        item for item in results
+        if item.get('category') in ('us_sp', 'us_ndq', 'us_rsl')
+    ])
+
+    sections = [
+        ("국내 테마 TOP10", _sort_by_1m_return([item for item in results if item.get('category') == 'domestic_theme'])[:10]),
+        ("미국 테마 TOP10", _sort_by_1m_return([item for item in results if item.get('category') == 'us_theme'])[:10]),
+        ("국내 저평가 TOP10", _sort_by_1m_return([item for item in results if item.get('category') == 'domestic_value'])[:10]),
+        ("미국 저평가 TOP10", _sort_by_1m_return(us_value_items)[:10]),
+    ]
+
+    messages = []
+    for title, items in sections:
+        if not items:
+            continue
+        lines = [_format_alert_line(item, index) for index, item in enumerate(items, start=1)]
+        messages.extend(_split_kakao_text(title, lines))
+    return messages
+
 # 8. 국내 성장 저평가주 탐색
 # 핫한 성장 테마는 가산점으로 사용하되, KRX 전체에서도 숨은 저평가 후보를 함께 찾는다.
 def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
@@ -556,7 +617,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             end_date = datetime.now().strftime("%Y%m%d")
             start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
             df_ohlcv = stock.get_market_ohlcv(start_date, end_date, code)
-            if df_ohlcv.empty or len(df_ohlcv) < 60:
+            if df_ohlcv.empty or len(df_ohlcv) < 120:
                 return None
 
             max_p = df_ohlcv['종가'].max()
@@ -573,13 +634,15 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             medium_volume_ok = base_volume_60 > 0 and base_volume_20 >= (base_volume_60 * 0.7)
             month_return = (curr_p / df_ohlcv['종가'].iloc[-20] - 1) * 100
             quarter_return = (curr_p / df_ohlcv['종가'].iloc[-60] - 1) * 100
+            half_year_return = (curr_p / df_ohlcv['종가'].iloc[-120] - 1) * 100
 
             target_p = adv['target_price']
             upside_val = ((float(target_p) / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
 
             # 성장 저평가 점수:
             # 핫한 성장 테마 여부는 가산점일 뿐 필수 조건이 아니다.
-            # 가격, 목표가 상승여력, 3개월 흐름, 1개월 진입 타이밍, 수급 회복을 함께 본다.
+            # 가격, 목표가 상승여력, 6개월 장기 소외 여부, 3개월 흐름,
+            # 1개월 진입 타이밍, 수급 회복을 함께 본다.
             score = 1 if theme_bonus else 0
             if per <= 25: score += 2
             elif per <= 35: score += 1
@@ -598,6 +661,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             if trading_value >= 3_000_000_000: score += 1
             if adv['grades'].get('growth') == '주의': score -= 1
             if drawdown > 0.50: score -= 3
+            if half_year_return < -30: score -= 2
             if quarter_return < -15: score -= 2
             if month_return < -10: score -= 2
             if upside_val > 80: score -= 1
@@ -610,6 +674,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                 and upside_val >= 12
                 and trading_value >= min_trading_value
                 and (curr_p >= ma20 or curr_p >= ma60)
+                and (theme_bonus or half_year_return > -30)
                 and quarter_return > -15
                 and month_return > -10
                 and medium_volume_ok
@@ -1063,6 +1128,11 @@ def main():
             default=lambda value: value.item() if hasattr(value, "item") else str(value)
         )
     print(f"\n✅ 분석 완료! {len(results)}개 종목 저장됨.")
+
+    alert_messages = build_kakao_alert_messages(results)
+    for message in alert_messages:
+        send_kakao_message(message)
+        time.sleep(0.3)
 
 if __name__ == "__main__":
     main()
