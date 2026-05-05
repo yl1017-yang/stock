@@ -70,6 +70,19 @@ US_SECTOR_ETFS = {
     'XLRE': 'Real Estate', 'XLU': 'Utilities'
 }
 
+US_HOT_THEME_BASKETS = {
+    'AI / 데이터센터': ['NVDA', 'MSFT', 'GOOGL', 'META', 'AVGO', 'AMD', 'ORCL', 'ANET'],
+    '반도체': ['NVDA', 'AVGO', 'AMD', 'TSM', 'ASML', 'AMAT', 'LRCX', 'MU', 'KLAC'],
+    '전력 인프라': ['GEV', 'ETN', 'VRT', 'PWR', 'CEG', 'NRG', 'HUBB', 'EME'],
+    '방산 / 우주항공': ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'HWM', 'RKLB'],
+    '비만치료 / 바이오': ['LLY', 'NVO', 'AMGN', 'REGN', 'VRTX', 'ISRG', 'TMO', 'DHR'],
+    '사이버보안': ['CRWD', 'PANW', 'FTNT', 'ZS', 'OKTA', 'NET', 'S', 'CYBR'],
+    '핀테크 / 크립토': ['COIN', 'HOOD', 'SQ', 'PYPL', 'MSTR', 'IBIT', 'MARA', 'RIOT'],
+    '원전 / 에너지': ['CEG', 'VST', 'CCJ', 'BWXT', 'SMR', 'XOM', 'CVX', 'SLB'],
+    '로봇 / 자동화': ['ISRG', 'TER', 'ROK', 'SYK', 'ABBNY', 'ZBRA', 'PATH', 'SYM'],
+    '양자컴퓨팅': ['IBM', 'IONQ', 'RGTI', 'QBTS', 'QUBT', 'GOOGL', 'MSFT', 'HON']
+}
+
 def is_feature_enabled(flag_name, default=True):
     value = os.getenv(flag_name)
     if value is None:
@@ -504,7 +517,7 @@ def _safe_float(value, default=0):
         return default
 
 # 8. 국내 성장 저평가주 탐색
-# 단순 낙폭과대주가 아니라 성장 테마 안에서 가격, 수급, 이평선 회복이 함께 확인되는 종목을 선별한다.
+# 핫한 성장 테마는 가산점으로 사용하되, KRX 전체에서도 숨은 저평가 후보를 함께 찾는다.
 def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
     print("\n--- [국내 성장 저평가주 정밀 탐색] ---")
     results = []
@@ -514,115 +527,167 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
     has_krx_data = not fund_df.empty and not cap_df.empty
     merged_df = fund_df.join(cap_df) if has_krx_data else pd.DataFrame()
 
-    print("미래 성장 섹터 내 성장 저평가 후보 분석 시작...")
+    def analyze_domestic_candidate(code, name, theme_name, interest_score=0, interest_level='N/A', theme_bonus=False):
+        if code in processed_codes:
+            return None
+
+        adv = get_naver_financials_advanced(code)
+        if not adv or adv['grades']['profit'] == '주의':
+            return None
+
+        per, pbr, div = 0, 0, "N/A"
+        if has_krx_data and code in merged_df.index:
+            row = merged_df.loc[code]
+            per, pbr = float(row['PER']), float(row['PBR'])
+            div = f"{float(row['DIV']):.2f}%" if row['DIV'] != 0 else "N/A"
+        else:
+            try:
+                per = float(adv['per']) if adv['per'] != "N/A" else 999
+                pbr = float(adv['pbr']) if adv['pbr'] != "N/A" else 999
+                div = adv['dividend']
+            except:
+                return None
+
+        # 너무 싼 종목보다 합리적 가격의 성장/회복 후보를 우선한다.
+        if not (0 < per <= 35 and 0 < pbr <= 4):
+            return None
+
+        try:
+            end_date = datetime.now().strftime("%Y%m%d")
+            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
+            df_ohlcv = stock.get_market_ohlcv(start_date, end_date, code)
+            if df_ohlcv.empty or len(df_ohlcv) < 60:
+                return None
+
+            max_p = df_ohlcv['종가'].max()
+            curr_p = df_ohlcv['종가'].iloc[-1]
+            volume = int(df_ohlcv['거래량'].iloc[-1])
+            trading_value = curr_p * volume
+            drawdown = 1 - (curr_p / max_p) if max_p > 0 else 0
+            ma20 = df_ohlcv['종가'].rolling(window=20).mean().iloc[-1]
+            ma60 = df_ohlcv['종가'].rolling(window=60).mean().iloc[-1]
+            recent_volume = df_ohlcv['거래량'].iloc[-5:].mean()
+            base_volume_20 = df_ohlcv['거래량'].iloc[-20:].mean()
+            base_volume_60 = df_ohlcv['거래량'].iloc[-60:].mean()
+            volume_recovering = base_volume_20 > 0 and recent_volume >= (base_volume_20 * 0.8)
+            medium_volume_ok = base_volume_60 > 0 and base_volume_20 >= (base_volume_60 * 0.7)
+            month_return = (curr_p / df_ohlcv['종가'].iloc[-20] - 1) * 100
+            quarter_return = (curr_p / df_ohlcv['종가'].iloc[-60] - 1) * 100
+
+            target_p = adv['target_price']
+            upside_val = ((float(target_p) / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
+
+            # 성장 저평가 점수:
+            # 핫한 성장 테마 여부는 가산점일 뿐 필수 조건이 아니다.
+            # 가격, 목표가 상승여력, 3개월 흐름, 1개월 진입 타이밍, 수급 회복을 함께 본다.
+            score = 1 if theme_bonus else 0
+            if per <= 25: score += 2
+            elif per <= 35: score += 1
+            if pbr <= 2.5: score += 2
+            elif pbr <= 4: score += 1
+            if 15 <= upside_val <= 40: score += 2
+            elif 40 < upside_val <= 70: score += 1
+            if curr_p >= ma20: score += 2
+            if curr_p >= ma60: score += 1
+            if quarter_return > 0: score += 2
+            elif quarter_return > -15: score += 1
+            if month_return > 0: score += 2
+            elif month_return > -5: score += 1
+            if volume_recovering: score += 1
+            if medium_volume_ok: score += 1
+            if trading_value >= 3_000_000_000: score += 1
+            if adv['grades'].get('growth') == '주의': score -= 1
+            if drawdown > 0.50: score -= 3
+            if quarter_return < -15: score -= 2
+            if month_return < -10: score -= 2
+            if upside_val > 80: score -= 1
+
+            min_score = 7 if theme_bonus else 8
+            min_trading_value = 1_000_000_000 if theme_bonus else 2_000_000_000
+            is_growth_value = (
+                score >= min_score
+                and 0.03 <= drawdown <= 0.50
+                and upside_val >= 12
+                and trading_value >= min_trading_value
+                and (curr_p >= ma20 or curr_p >= ma60)
+                and quarter_return > -15
+                and month_return > -10
+                and medium_volume_ok
+            )
+
+            if not is_growth_value:
+                return None
+
+            display_interest_level = interest_level
+            if display_interest_level == 'N/A' and interest_score > 0:
+                display_interest_level = get_interest_level(interest_score)
+
+            return {
+                'category': 'domestic_value',
+                'theme': theme_name,
+                'name': name, 'code': code,
+                'volume': volume, 'change_1m': f"{month_return:+.2f}%",
+                'change_3m': f"{quarter_return:+.2f}%",
+                'per': f"{per:.2f}", 'pbr': f"{pbr:.2f}", 'dividend': div,
+                'upside': f"{upside_val:+.2f}%" if upside_val != 0 else "N/A", 'fair_value': target_p,
+                'current_price': curr_p,
+                'interest_level': display_interest_level,
+                'interest_score': round(interest_score, 2),
+                'opinion': adv['opinion'], 'grades': adv['grades'], 'is_profitable': "Pass (성장 저평가)",
+                'time': datetime.now().strftime('%Y-%m-%d %H:%M')
+            }, score, upside_val
+        except Exception:
+            return None
+
+    print("성장 테마 기반 저평가 후보 분석 시작...")
     for _, theme in growth_themes.iterrows():
         try:
             theme_stocks = get_stocks_in_theme(theme['link'])
             for _, s in theme_stocks.iterrows():
                 code = s['code']
-                if code in processed_codes: continue
-                
-                # 기본 정보 수집 (KRX 데이터가 없으면 네이버에서 상세 수집)
-                adv = get_naver_financials_advanced(code)
-                if not adv or adv['grades']['profit'] == '주의': continue
-                
-                # 밸류에이션 필터
-                per, pbr, div = 0, 0, "N/A"
-                if has_krx_data and code in merged_df.index:
-                    row = merged_df.loc[code]
-                    per, pbr = float(row['PER']), float(row['PBR'])
-                    div = f"{float(row['DIV']):.2f}%" if row['DIV'] != 0 else "N/A"
-                else:
-                    # KRX 데이터 실패 시 네이버 데이터 활용
-                    try:
-                        per = float(adv['per']) if adv['per'] != "N/A" else 999
-                        pbr = float(adv['pbr']) if adv['pbr'] != "N/A" else 999
-                        div = adv['dividend']
-                    except: continue
-
-                # 성장 저평가 조건: 너무 싼 종목보다 합리적 가격의 성장 후보를 우선한다.
-                if 0 < per <= 35 and 0 < pbr <= 4:
-                    end_date = datetime.now().strftime("%Y%m%d")
-                    start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
-                    df_ohlcv = stock.get_market_ohlcv(start_date, end_date, code)
-                    if df_ohlcv.empty or len(df_ohlcv) < 60: continue
-                    
-                    max_p = df_ohlcv['종가'].max()
-                    curr_p = df_ohlcv['종가'].iloc[-1]
-                    volume = int(df_ohlcv['거래량'].iloc[-1])
-                    trading_value = curr_p * volume
-                    drawdown = 1 - (curr_p / max_p) if max_p > 0 else 0
-                    ma20 = df_ohlcv['종가'].rolling(window=20).mean().iloc[-1]
-                    ma60 = df_ohlcv['종가'].rolling(window=60).mean().iloc[-1]
-                    recent_volume = df_ohlcv['거래량'].iloc[-5:].mean()
-                    base_volume_20 = df_ohlcv['거래량'].iloc[-20:].mean()
-                    base_volume_60 = df_ohlcv['거래량'].iloc[-60:].mean()
-                    volume_recovering = base_volume_20 > 0 and recent_volume >= (base_volume_20 * 0.8)
-                    medium_volume_ok = base_volume_60 > 0 and df_ohlcv['거래량'].iloc[-20:].mean() >= (base_volume_60 * 0.7)
-                    month_return = (curr_p / df_ohlcv['종가'].iloc[-20] - 1) * 100 if len(df_ohlcv) >= 20 else 0
-                    quarter_return = (curr_p / df_ohlcv['종가'].iloc[-60] - 1) * 100
-                    
-                    target_p = adv['target_price']
-                    upside_val = ((float(target_p) / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
-
-                    # 성장 저평가 점수:
-                    # 밸류에이션, 목표가 상승여력, 이평선 회복, 3개월 중기 흐름,
-                    # 1개월 진입 타이밍, 거래 회복을 가산하고 과도한 소외/목표가 괴리는 감점한다.
-                    score = 0
-                    if per <= 25: score += 2
-                    elif per <= 35: score += 1
-                    if pbr <= 2.5: score += 2
-                    elif pbr <= 4: score += 1
-                    if 15 <= upside_val <= 40: score += 2
-                    elif 40 < upside_val <= 70: score += 1
-                    if curr_p >= ma20: score += 2
-                    if curr_p >= ma60: score += 1
-                    if quarter_return > 0: score += 2
-                    elif quarter_return > -15: score += 1
-                    if month_return > 0: score += 2
-                    elif month_return > -5: score += 1
-                    if volume_recovering: score += 1
-                    if medium_volume_ok: score += 1
-                    if trading_value >= 3_000_000_000: score += 1
-                    if drawdown > 0.50: score -= 3
-                    if quarter_return < -15: score -= 2
-                    if month_return < -10: score -= 2
-                    if upside_val > 80: score -= 1
-
-                    # 최종 통과 조건은 점수만 보지 않고 최소 유동성, 하락폭, 모멘텀을 함께 요구한다.
-                    is_growth_value = (
-                        score >= 7
-                        and 0.03 <= drawdown <= 0.50
-                        and upside_val >= 12
-                        and trading_value >= 1_000_000_000
-                        and (curr_p >= ma20 or curr_p >= ma60)
-                        and quarter_return > -15
-                        and month_return > -10
-                        and medium_volume_ok
-                    )
-
-                    if is_growth_value:
-                        interest_score = _safe_float(theme.get('interest_score'))
-                        results.append({
-                            'category': 'domestic_value',
-                            'theme': theme['name'], 
-                            'name': s['name'], 'code': code,
-                            'volume': volume, 'change_1m': f"{month_return:+.2f}%",
-                            'change_3m': f"{quarter_return:+.2f}%",
-                            'per': f"{per:.2f}", 'pbr': f"{pbr:.2f}", 'dividend': div,
-                            'upside': f"{upside_val:+.2f}%" if upside_val != 0 else "N/A", 'fair_value': target_p,
-                            'current_price': curr_p,
-                            'interest_level': theme.get('interest_level', get_interest_level(interest_score)),
-                            'interest_score': round(interest_score, 2),
-                            'opinion': adv['opinion'], 'grades': adv['grades'], 'is_profitable': "Pass (성장 저평가)",
-                            'time': datetime.now().strftime('%Y-%m-%d %H:%M')
-                        })
-                        processed_codes.add(code)
-                        print(f"💎 성장 저평가 후보 발견: {s['name']} (점수: {score}, 상승여력: {upside_val:.1f}%)")
+                interest_score = _safe_float(theme.get('interest_score'))
+                analyzed = analyze_domestic_candidate(
+                    code,
+                    s['name'],
+                    theme['name'],
+                    interest_score=interest_score,
+                    interest_level=theme.get('interest_level', 'N/A'),
+                    theme_bonus=True
+                )
+                if analyzed:
+                    item, score, upside_val = analyzed
+                    results.append(item)
+                    processed_codes.add(code)
+                    print(f"💎 성장 테마 저평가 후보 발견: {s['name']} (점수: {score}, 상승여력: {upside_val:.1f}%)")
                 
                 if len(results) >= 30: break
             if len(results) >= 30: break
         except: continue
+
+    if len(results) < 30 and has_krx_data:
+        print("KRX 전체 기반 숨은 저평가 후보 분석 시작...")
+        try:
+            candidates = merged_df.copy()
+            candidates = candidates[(candidates['PER'] > 0) & (candidates['PER'] <= 35) & (candidates['PBR'] > 0) & (candidates['PBR'] <= 4)]
+            if '거래대금' in candidates.columns:
+                candidates = candidates[candidates['거래대금'] >= 1_000_000_000].sort_values(by='거래대금', ascending=False)
+            else:
+                candidates = candidates.head(250)
+
+            for code, _ in candidates.head(300).iterrows():
+                if code in processed_codes:
+                    continue
+                name = stock.get_market_ticker_name(code)
+                analyzed = analyze_domestic_candidate(code, name, '국내 숨은 저평가', theme_bonus=False)
+                if analyzed:
+                    item, score, upside_val = analyzed
+                    results.append(item)
+                    processed_codes.add(code)
+                    print(f"🔎 숨은 저평가 후보 발견: {name} (점수: {score}, 상승여력: {upside_val:.1f}%)")
+                if len(results) >= 30:
+                    break
+        except Exception as e:
+            print(f"숨은 저평가 후보 분석 실패: {e}")
     return results
 
 # 9. 미국 주도 섹터 계산
@@ -699,7 +764,88 @@ def get_alpha_news_score(ticker, sector=None):
     ALPHA_NEWS_CACHE[ticker] = score
     return score
 
-# 10. 미국 성장 저평가주 탐색
+# 10. 미국 핫 테마 탐색
+# 국내 테마 탭처럼 현재 강한 미국 테마를 보여주기 위한 별도 카테고리다.
+# 테마 바스켓의 최근 1개월 평균 수익률로 핫한 테마를 고르고, 테마 안의 강한 종목을 표시한다.
+def get_us_hot_theme_stocks(theme_limit=6, stock_limit=5):
+    print("\n--- [미국 핫 테마 탐색] ---")
+    results = []
+    theme_rows = []
+
+    for theme_name, tickers in US_HOT_THEME_BASKETS.items():
+        stock_rows = []
+        for ticker_str in tickers:
+            try:
+                ticker = yf.Ticker(ticker_str)
+                hist = ticker.history(period="3mo")
+                if hist.empty or len(hist) < 50:
+                    continue
+
+                curr_p = _safe_float(hist['Close'].iloc[-1])
+                if curr_p <= 0:
+                    continue
+
+                month_return = (hist['Close'].iloc[-1] / hist['Close'].iloc[-20] - 1) * 100
+                quarter_return = (hist['Close'].iloc[-1] / hist['Close'].iloc[0] - 1) * 100
+                ma20 = hist['Close'].rolling(window=20).mean().iloc[-1]
+                volume = int(hist['Volume'].iloc[-1] or 0)
+                if month_return <= 0 or curr_p < ma20:
+                    continue
+
+                info = ticker.info
+                per = _safe_float(info.get('trailingPE'))
+                pbr = _safe_float(info.get('priceToBook'))
+                target_p = info.get('targetMeanPrice', "N/A")
+                upside_val = ((target_p / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
+                alpha_news_score = get_alpha_news_score(ticker_str)
+
+                grades = {"profit": "보통", "health": "보통", "growth": "우수" if quarter_return > 0 else "보통"}
+                roe = _safe_float(info.get('returnOnEquity'))
+                if roe > 0.15:
+                    grades["profit"] = "최고"
+                elif roe > 0.10:
+                    grades["profit"] = "우수"
+                debt_to_equity = _safe_float(info.get('debtToEquity'), 150)
+                if debt_to_equity < 60:
+                    grades["health"] = "최고"
+                elif debt_to_equity < 100:
+                    grades["health"] = "우수"
+
+                stock_rows.append({
+                    'category': 'us_theme',
+                    'theme': theme_name,
+                    'name': info.get('shortName', ticker_str),
+                    'code': ticker_str,
+                    'volume': volume,
+                    'change_1m': f"{month_return:+.2f}%",
+                    'change_3m': f"{quarter_return:+.2f}%",
+                    'per': f"{per:.2f}" if per > 0 else "N/A",
+                    'pbr': f"{pbr:.2f}" if pbr > 0 else "N/A",
+                    'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
+                    'upside': f"{upside_val:+.2f}%" if upside_val else "N/A",
+                    'fair_value': str(target_p) if target_p != "N/A" else "N/A",
+                    'current_price': curr_p,
+                    'interest_level': get_interest_level(month_return / 3 + alpha_news_score),
+                    'interest_score': round(month_return / 3 + alpha_news_score, 2),
+                    'opinion': info.get('recommendationKey', "N/A").replace('_', ' ').title(),
+                    'grades': grades,
+                    'is_profitable': "Pass (미국 주도 테마)",
+                    'time': datetime.now().strftime('%Y-%m-%d %H:%M')
+                })
+            except Exception:
+                continue
+
+        if stock_rows:
+            avg_return = sum(_safe_float(row['change_1m']) for row in stock_rows) / len(stock_rows)
+            theme_rows.append((theme_name, avg_return, sorted(stock_rows, key=lambda row: _safe_float(row['change_1m']), reverse=True)))
+
+    for theme_name, avg_return, stock_rows in sorted(theme_rows, key=lambda row: row[1], reverse=True)[:theme_limit]:
+        print(f"🔥 미국 핫 테마: {theme_name} ({avg_return:+.2f}%)")
+        results.extend(stock_rows[:stock_limit])
+
+    return results
+
+# 11. 미국 성장 저평가주 탐색
 # S&P500, NASDAQ100, Russell1000 후보를 같은 GARP 기준으로 평가한다.
 def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
     results = []
@@ -880,6 +1026,9 @@ def main():
 
     results.extend(get_top_theme_stocks(top_themes))
     results.extend(find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus))
+
+    # 미국 핫 테마는 지수 저평가와 별도로 최근 강한 테마 바스켓에서 생성한다.
+    results.extend(get_us_hot_theme_stocks())
 
     # 미국 지수별 구성 종목을 수집한 뒤 동일한 성장 저평가 스코어로 평가한다.
     leading_sectors = get_us_leading_sectors()

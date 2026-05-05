@@ -26,6 +26,7 @@ function filterData(filter) {
         let keyword = '국내 테마';
         if (filter === 'Pass') keyword = '수익';
         if (filter === 'Value') keyword = '국내 저평가';
+        if (filter === 'US_THEME') keyword = '미국 테마';
         if (filter === 'US_SP') keyword = '미국 S&P500';
         if (filter === 'US_NDQ') keyword = '미국 나스닥';
         if (filter === 'US_RSL') keyword = '미국 Russell 1000';
@@ -42,6 +43,10 @@ function filterData(filter) {
     } else if (filter === 'Value') {
         // 국내 저평가 카테고리 필터링
         const filtered = allData.filter(item => item.category === 'domestic_value');
+        render(filtered);
+    } else if (filter === 'US_THEME') {
+        // 미국 주요 성장 테마 바스켓에서 최근 강한 종목만 표시한다.
+        const filtered = allData.filter(item => item.category === 'us_theme');
         render(filtered);
     } else if (filter === 'US_SP') {
         // S&P 500 관련 필터링
