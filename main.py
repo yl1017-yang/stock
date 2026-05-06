@@ -330,7 +330,7 @@ def get_stocks_in_theme(theme_link):
 
 # 3. 국내 주도 테마 종목 수집
 # "국내 테마" 탭에 노출할 단기 주도 테마 종목을 구성한다.
-def get_top_theme_stocks(top_themes):
+def get_top_theme_stocks(top_themes, cap_df=None):
     print("\n--- [국내 주도 테마 종목 수집] ---")
     results = []
     for _, theme in top_themes.iterrows():
@@ -344,11 +344,20 @@ def get_top_theme_stocks(top_themes):
                 
                 # 상승여력 계산
                 upside_str = "N/A"
+                upside_val = 0
                 if adv['target_price'] != "N/A" and adv['current_price'] > 0:
                     try:
                         upside_val = ((float(adv['target_price']) / adv['current_price']) - 1) * 100
                         upside_str = f"{upside_val:+.2f}%"
                     except: pass
+
+                rsi, risk_flags = get_domestic_risk_snapshot(code, adv['current_price'], upside_val)
+                market_cap = 0
+                if cap_df is not None and not cap_df.empty and code in cap_df.index:
+                    try:
+                        market_cap = _safe_float(cap_df.loc[code].get('시가총액'))
+                    except Exception:
+                        market_cap = 0
 
                 results.append({
                     'category': 'domestic_theme',
@@ -356,13 +365,17 @@ def get_top_theme_stocks(top_themes):
                     'name': s['name'],
                     'code': code,
                     'volume': s['volume'],
+                    'market_cap': market_cap,
                     'change_1m': get_1m_return(code),
+                    'change_3m': get_3m_return(code),
                     'per': adv['per'],
                     'pbr': adv['pbr'],
                     'dividend': adv['dividend'],
                     'upside': upside_str,
                     'fair_value': adv['target_price'],
                     'current_price': adv['current_price'],
+                    'rsi': rsi if rsi else "N/A",
+                    'risk_flags': risk_flags,
                     'interest_level': theme.get('interest_level', 'N/A'),
                     'interest_score': round(float(theme.get('interest_score', 0)), 2),
                     'opinion': adv['opinion'],
@@ -483,29 +496,35 @@ def check_ma_turnaround(code, is_us=False):
     except Exception:
         return False, 0
 
-# 6. 최근 1개월 수익률 계산
+# 6. 최근 N거래일 수익률 계산
 # 국내는 KRX OHLCV, 미국은 yfinance 히스토리를 사용한다.
-def get_1m_return(code, is_us=False):
+def get_period_return(code, days=20, is_us=False):
     try:
         if is_us:
             ticker = yf.Ticker(code)
-            hist = ticker.history(period="2mo")
-            if len(hist) < 20: return "N/A"
+            hist = ticker.history(period="6mo")
+            if len(hist) < days: return "N/A"
             current = hist['Close'].iloc[-1]
-            past = hist['Close'].iloc[-20]
+            past = hist['Close'].iloc[-days]
             change = (current / past - 1) * 100
             return f"{change:+.2f}%"
         else:
             end_date = datetime.now().strftime("%Y%m%d")
-            start_date = (datetime.now() - timedelta(days=45)).strftime("%Y%m%d")
+            start_date = (datetime.now() - timedelta(days=days * 3)).strftime("%Y%m%d")
             df = stock.get_market_ohlcv(start_date, end_date, code)
-            if len(df) < 10: return "N/A"
+            if len(df) < days: return "N/A"
             current = df['종가'].iloc[-1]
-            past = df['종가'].iloc[0]
+            past = df['종가'].iloc[-days]
             change = (current / past - 1) * 100
             return f"{change:+.2f}%"
     except:
         return "N/A"
+
+def get_1m_return(code, is_us=False):
+    return get_period_return(code, 20, is_us)
+
+def get_3m_return(code, is_us=False):
+    return get_period_return(code, 60, is_us)
 
 # 7. 외부 API 숫자값 안전 변환
 # yfinance는 None, "N/A", 문자열 숫자를 섞어 반환하므로 필터 전에 숫자로 정규화한다.
@@ -516,6 +535,56 @@ def _safe_float(value, default=0):
         return float(str(value).replace(',', '').replace('%', ''))
     except:
         return default
+
+def calculate_rsi(close_series, period=14):
+    if close_series is None or len(close_series) <= period:
+        return 0
+    delta = close_series.diff()
+    gain = delta.clip(lower=0).rolling(period).mean()
+    loss = (-delta.clip(upper=0)).rolling(period).mean()
+    avg_gain = _safe_float(gain.iloc[-1])
+    avg_loss = _safe_float(loss.iloc[-1])
+    if avg_loss == 0:
+        return 100 if avg_gain > 0 else 0
+    rs = avg_gain / avg_loss
+    return round(100 - (100 / (1 + rs)), 2)
+
+def build_risk_flags(rsi=0, month_return=0, upside_val=0, current_price=0, high_52=0, ma20=0):
+    flags = []
+    if rsi >= 80:
+        flags.append("과열강함")
+    elif rsi >= 70:
+        flags.append("RSI과열")
+    if month_return >= 30:
+        flags.append("단기급등")
+    if upside_val and upside_val <= 5:
+        flags.append("상승여력낮음")
+    if high_52 and current_price >= high_52 * 0.95:
+        flags.append("52주고점근접")
+    if ma20 and current_price >= ma20 * 1.20:
+        flags.append("20일선과열")
+
+    caution_hits = sum(flag in flags for flag in ["RSI과열", "과열강함", "단기급등", "상승여력낮음", "52주고점근접", "20일선과열"])
+    if caution_hits >= 3 and "고점주의" not in flags:
+        flags.insert(0, "고점주의")
+    return flags
+
+def get_domestic_risk_snapshot(code, display_price=0, upside_val=0):
+    try:
+        end_date = datetime.now().strftime("%Y%m%d")
+        start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
+        df = stock.get_market_ohlcv(start_date, end_date, code)
+        if df.empty or len(df) < 20:
+            return 0, []
+        close = df['종가']
+        current_price = display_price if display_price > 0 else close.iloc[-1]
+        month_return = (close.iloc[-1] / close.iloc[-20] - 1) * 100
+        ma20 = close.rolling(window=20).mean().iloc[-1]
+        high_52 = close.max()
+        rsi = calculate_rsi(close)
+        return rsi, build_risk_flags(rsi, month_return, upside_val, current_price, high_52, ma20)
+    except Exception:
+        return 0, []
 
 def _compact_name(name, max_len=10):
     text = str(name or "N/A").strip()
@@ -528,8 +597,10 @@ def _format_alert_line(item, index):
     name = _compact_name(item.get('name'))
     change_1m = item.get('change_1m') or "N/A"
     upside = item.get('upside') if item.get('upside') != "N/A" else ""
+    risk_flags = item.get('risk_flags') or []
+    risk_text = f" / {','.join(risk_flags[:2])}" if risk_flags else ""
     suffix = f" / {upside}" if upside else ""
-    return f"{index}. {name} {change_1m}{suffix}"
+    return f"{index}. {name} {change_1m}{suffix}{risk_text}"
 
 def _split_kakao_text(title, lines, max_len=180):
     messages = []
@@ -622,6 +693,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
 
             max_p = df_ohlcv['종가'].max()
             curr_p = df_ohlcv['종가'].iloc[-1]
+            display_p = adv['current_price'] if adv.get('current_price', 0) > 0 else curr_p
             volume = int(df_ohlcv['거래량'].iloc[-1])
             trading_value = curr_p * volume
             drawdown = 1 - (curr_p / max_p) if max_p > 0 else 0
@@ -637,7 +709,9 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             half_year_return = (curr_p / df_ohlcv['종가'].iloc[-120] - 1) * 100
 
             target_p = adv['target_price']
-            upside_val = ((float(target_p) / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
+            upside_val = ((float(target_p) / display_p) - 1) * 100 if target_p != "N/A" and display_p > 0 else 0
+            rsi = calculate_rsi(df_ohlcv['종가'])
+            risk_flags = build_risk_flags(rsi, month_return, upside_val, display_p, max_p, ma20)
 
             # 성장 저평가 점수:
             # 핫한 성장 테마 여부는 가산점일 뿐 필수 조건이 아니다.
@@ -695,7 +769,9 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                 'change_3m': f"{quarter_return:+.2f}%",
                 'per': f"{per:.2f}", 'pbr': f"{pbr:.2f}", 'dividend': div,
                 'upside': f"{upside_val:+.2f}%" if upside_val != 0 else "N/A", 'fair_value': target_p,
-                'current_price': curr_p,
+                'current_price': display_p,
+                'rsi': rsi if rsi else "N/A",
+                'risk_flags': risk_flags,
                 'interest_level': display_interest_level,
                 'interest_score': round(interest_score, 2),
                 'opinion': adv['opinion'], 'grades': adv['grades'], 'is_profitable': "Pass (성장 저평가)",
@@ -858,11 +934,14 @@ def get_us_hot_theme_stocks(theme_limit=6, stock_limit=5):
                     continue
 
                 info = ticker.info
+                high_52 = _safe_float(info.get('fiftyTwoWeekHigh')) or hist['Close'].max()
                 per = _safe_float(info.get('trailingPE'))
                 pbr = _safe_float(info.get('priceToBook'))
                 target_p = info.get('targetMeanPrice', "N/A")
                 upside_val = ((target_p / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
                 alpha_news_score = get_alpha_news_score(ticker_str)
+                rsi = calculate_rsi(hist['Close'])
+                risk_flags = build_risk_flags(rsi, month_return, upside_val, curr_p, high_52, ma20)
 
                 grades = {"profit": "보통", "health": "보통", "growth": "우수" if quarter_return > 0 else "보통"}
                 roe = _safe_float(info.get('returnOnEquity'))
@@ -882,6 +961,7 @@ def get_us_hot_theme_stocks(theme_limit=6, stock_limit=5):
                     'name': info.get('shortName', ticker_str),
                     'code': ticker_str,
                     'volume': volume,
+                    'market_cap': _safe_float(info.get('marketCap')),
                     'change_1m': f"{month_return:+.2f}%",
                     'change_3m': f"{quarter_return:+.2f}%",
                     'per': f"{per:.2f}" if per > 0 else "N/A",
@@ -890,6 +970,8 @@ def get_us_hot_theme_stocks(theme_limit=6, stock_limit=5):
                     'upside': f"{upside_val:+.2f}%" if upside_val else "N/A",
                     'fair_value': str(target_p) if target_p != "N/A" else "N/A",
                     'current_price': curr_p,
+                    'rsi': rsi if rsi else "N/A",
+                    'risk_flags': risk_flags,
                     'interest_level': get_interest_level(month_return / 3 + alpha_news_score),
                     'interest_score': round(month_return / 3 + alpha_news_score, 2),
                     'opinion': info.get('recommendationKey', "N/A").replace('_', ' ').title(),
@@ -960,6 +1042,8 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
 
             target_p = info.get('targetMeanPrice', "N/A")
             upside_val = ((target_p / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
+            rsi = calculate_rsi(ticker_hist['Close'])
+            risk_flags = build_risk_flags(rsi, month_return, upside_val, curr_p, high_52, ma20)
             
             # 성장성이 확인되지 않으면 저평가처럼 보여도 제외한다.
             has_growth = (
@@ -1033,6 +1117,8 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
                 'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
                 'upside': f"{upside_val:+.2f}%", 'fair_value': str(target_p),
                 'current_price': curr_p,
+                'rsi': rsi if rsi else "N/A",
+                'risk_flags': risk_flags,
                 'interest_level': get_interest_level(alpha_news_score * 2),
                 'interest_score': round(alpha_news_score, 2),
                 'opinion': info.get('recommendationKey', "N/A").replace('_', ' ').title(),
@@ -1089,7 +1175,7 @@ def main():
             print(f"[{search_date}] 데이터 수집 시도 실패: {e}")
             continue
 
-    results.extend(get_top_theme_stocks(top_themes))
+    results.extend(get_top_theme_stocks(top_themes, cap_df))
     results.extend(find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus))
 
     # 미국 핫 테마는 지수 저평가와 별도로 최근 강한 테마 바스켓에서 생성한다.

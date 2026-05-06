@@ -27,9 +27,10 @@ function filterData(filter) {
         if (filter === 'Pass') keyword = '수익';
         if (filter === 'Value') keyword = '국내 저평가';
         if (filter === 'US_THEME') keyword = '미국 테마';
-        if (filter === 'US_SP') keyword = '미국 S&P500';
-        if (filter === 'US_NDQ') keyword = '미국 나스닥';
-        if (filter === 'US_RSL') keyword = '미국 Russell 1000';
+        if (filter === 'US_SP') keyword = 'S&P500';
+        if (filter === 'US_NDQ') keyword = '나스닥';
+        if (filter === 'US_RSL') keyword = 'Russell 1000';
+        if (filter === 'HEATMAP') keyword = '히트맵';
         btn.classList.toggle('active', btn.textContent.trim() === keyword);
     });
 
@@ -60,11 +61,91 @@ function filterData(filter) {
         // Russell 1000 관련 필터링
         const filtered = allData.filter(item => item.category === 'us_rsl');
         render(filtered);
+    } else if (filter === 'HEATMAP') {
+        renderHeatmap();
     }
+}
+
+function parsePercent(value) {
+    if (!value || value === 'N/A') return 0;
+    return Number(String(value).replace('%', '').replace('+', '')) || 0;
+}
+
+function getHeatColor(change) {
+    const intensity = Math.min(Math.abs(change) / 30, 1);
+    if (change >= 0) {
+        const light = 52 - intensity * 18;
+        return `hsl(0, 86%, ${light}%)`;
+    }
+    const light = 50 - intensity * 12;
+    return `hsl(220, 74%, ${light}%)`;
+}
+
+function getSizeMetric(item) {
+    const marketCap = Number(item.market_cap) || 0;
+    if (marketCap > 0) return marketCap;
+    return (Number(item.current_price) || 0) * (Number(item.volume) || 0);
+}
+
+function getHeatSpanByRank(index) {
+    if (index === 0) return { col: 4, row: 3 };
+    if (index <= 2) return { col: 4, row: 2 };
+    if (index <= 5) return { col: 3, row: 2 };
+    if (index <= 11) return { col: 2, row: 2 };
+    return { col: 2, row: 1 };
+}
+
+function createHeatmapSection(title, data) {
+    const section = document.createElement('section');
+    section.className = 'heatmap-section';
+
+    const items = [...data]
+        .sort((a, b) => getSizeMetric(b) - getSizeMetric(a))
+        .slice(0, 36);
+
+    const tiles = items.map((item, index) => {
+        const change = parsePercent(item.change_1m);
+        const span = getHeatSpanByRank(index);
+        const flags = Array.isArray(item.risk_flags) ? item.risk_flags : [];
+        const peakLabel = flags.includes('고점주의') ? '고점주의' : '고점아님';
+        const sizeLabel = item.market_cap ? '시총 기준' : '거래대금 기준';
+        return `
+            <div class="heatmap-tile" title="${sizeLabel}" style="--tile-color:${getHeatColor(change)}; grid-column: span ${span.col}; grid-row: span ${span.row};">
+                <div class="heatmap-stock">${item.name}</div>
+                <div class="heatmap-theme">${item.theme}</div>
+                <div class="heatmap-change">${item.change_1m || 'N/A'}</div>
+                <span class="heatmap-flag">${peakLabel}</span>
+            </div>
+        `;
+    }).join('');
+
+    section.innerHTML = `
+        <div class="heatmap-title">${title}</div>
+        <div class="heatmap-grid">${tiles}</div>
+    `;
+    return section;
+}
+
+function renderHeatmap() {
+    const container = document.getElementById('dashboard-items');
+    container.innerHTML = '';
+    container.classList.add('heatmap-mode');
+
+    const domesticTheme = allData.filter(item => item.category === 'domestic_theme');
+    const usTheme = allData.filter(item => item.category === 'us_theme');
+
+    if (domesticTheme.length === 0 && usTheme.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #888; padding: 2rem; font-size: 1.2rem; grid-column: 1 / -1;">히트맵에 표시할 테마 데이터가 없습니다.</div>';
+        return;
+    }
+
+    container.appendChild(createHeatmapSection('국내 테마 히트맵 (크기: 시가총액 / 색상: 1개월 수익률)', domesticTheme));
+    container.appendChild(createHeatmapSection('미국 테마 히트맵 (크기: 시가총액 / 색상: 1개월 수익률)', usTheme));
 }
 
 function render(data) {
     const container = document.getElementById('dashboard-items');
+    container.classList.remove('heatmap-mode');
     container.innerHTML = '';
 
     if (data.length === 0) {
@@ -97,6 +178,15 @@ function render(data) {
             const interestHtml = s.interest_level && s.interest_level !== 'N/A'
                 ? `<span class="interest-badge interest-${s.interest_level}">관심도:${s.interest_level}</span>`
                 : '';
+            const rsiHtml = s.rsi && s.rsi !== 'N/A' ? `<span class="risk-badge rsi">RSI ${s.rsi}</span>` : '';
+            const riskFlags = Array.isArray(s.risk_flags) ? s.risk_flags : [];
+            const peakStatusHtml = riskFlags.includes('고점주의')
+                ? '<span class="risk-badge high">고점주의</span>'
+                : '<span class="risk-badge safe">고점아님</span>';
+            const riskHtml = riskFlags
+                .filter(flag => flag !== '고점주의')
+                .map(flag => `<span class="risk-badge ${flag === '과열강함' ? 'high' : ''}">${flag}</span>`)
+                .join('');
 
             // 프리미엄 지표 HTML 생성
             let premiumHtml = '';
@@ -127,6 +217,9 @@ function render(data) {
                         <span class="grade-badge ${getGradeClass(s.grades.health)}">재무:${s.grades.health}</span>
                         <span class="grade-badge ${getGradeClass(s.grades.growth)}">성장:${s.grades.growth}</span>
                         ${interestHtml}
+                        ${rsiHtml}
+                        ${peakStatusHtml}
+                        ${riskHtml}
                         ${s.opinion && s.opinion !== 'N/A' ? `<span class="opinion-badge">${s.opinion}</span>` : ''}
                     </div>
                 `;

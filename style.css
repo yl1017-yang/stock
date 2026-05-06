@@ -70,7 +70,9 @@ h1 {
 .controls {
     margin-bottom: 20px;
     display: flex;
-    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
     animation: fadeIn 1s ease-out;
 }
 
@@ -99,6 +101,95 @@ h1 {
     gap: 25px;
     width: 100%;
     max-width: 1400px;
+}
+
+.dashboard-grid.heatmap-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.heatmap-section {
+    width: 100%;
+}
+
+.heatmap-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 10px 4px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 78px;
+    gap: 3px;
+    width: 100%;
+    min-height: 300px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 3px;
+}
+
+.heatmap-tile {
+    background: var(--tile-color);
+    border: 1px solid rgba(5, 8, 10, 0.45);
+    border-radius: 6px;
+    padding: 8px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    overflow: hidden;
+}
+
+.heatmap-tile:hover {
+    transform: scale(1.02);
+    z-index: 2;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.heatmap-stock {
+    max-width: 100%;
+    font-size: clamp(0.68rem, 0.9vw, 0.9rem);
+    font-weight: 800;
+    line-height: 1.18;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.heatmap-theme {
+    max-width: 100%;
+    margin-top: 2px;
+    font-size: clamp(0.58rem, 0.72vw, 0.68rem);
+    font-weight: 600;
+    opacity: 0.75;
+    line-height: 1.12;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+}
+
+.heatmap-change {
+    margin-top: 3px;
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.heatmap-flag {
+    margin-top: 4px;
+    padding: 1px 5px;
+    border-radius: 999px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.22);
 }
 
 .theme-card {
@@ -227,6 +318,7 @@ h1 {
 
 .grade-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     margin-top: 6px;
 }
@@ -270,6 +362,34 @@ h1 {
     color: #ffcc00;
     background: rgba(255, 204, 0, 0.08);
     border-color: rgba(255, 204, 0, 0.18);
+}
+
+.risk-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    color: #ffcc00;
+    background: rgba(255, 204, 0, 0.08);
+    border: 1px solid rgba(255, 204, 0, 0.2);
+}
+
+.risk-badge.high {
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.12);
+    border-color: rgba(255, 77, 77, 0.3);
+}
+
+.risk-badge.safe {
+    color: #00ff88;
+    background: rgba(0, 255, 136, 0.08);
+    border-color: rgba(0, 255, 136, 0.2);
+}
+
+.risk-badge.rsi {
+    color: #c7d2fe;
+    background: rgba(124, 92, 255, 0.12);
+    border-color: rgba(124, 92, 255, 0.26);
 }
 
 .opinion-badge {
@@ -318,4 +438,12 @@ footer {
 @media (max-width: 600px) {
     h1 { font-size: 2rem; }
     .dashboard-grid { grid-template-columns: 1fr; }
+    .heatmap-grid {
+        grid-template-columns: repeat(6, 1fr);
+        grid-auto-rows: 82px;
+    }
+    .heatmap-tile {
+        grid-column: span 3 !important;
+        grid-row: span 1 !important;
+    }
 }
