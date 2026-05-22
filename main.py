@@ -1426,7 +1426,7 @@ def scan_yang_stocks(fund_df, cap_df):
                     
                 yang_results.append({
                     'category': 'yang_stock',
-                    'theme': '양 종목',
+                    'theme': '양 종목 (미국)',
                     'name': name,
                     'code': ticker_str,
                     'volume': volume,
@@ -1492,7 +1492,7 @@ def scan_yang_stocks(fund_df, cap_df):
                     
                 yang_results.append({
                     'category': 'yang_stock',
-                    'theme': '양 종목',
+                    'theme': '양 종목 (국내)',
                     'name': name,
                     'code': code,
                     'volume': volume,

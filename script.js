@@ -31,8 +31,7 @@ function filterData(filter) {
         if (filter === 'US_NDQ') keyword = '나스닥';
         if (filter === 'US_RSL') keyword = 'Russell 1000';
         if (filter === 'HEATMAP') keyword = '히트맵';
-        if (filter === 'YANG_DOMESTIC') keyword = '양 국내';
-        if (filter === 'YANG_US') keyword = '양 미국';
+        if (filter === 'YANG_STOCK') keyword = '양 종목';
         btn.classList.toggle('active', btn.textContent.trim() === keyword);
     });
 
@@ -65,11 +64,8 @@ function filterData(filter) {
         render(filtered);
     } else if (filter === 'HEATMAP') {
         renderHeatmap();
-    } else if (filter === 'YANG_DOMESTIC') {
-        const filtered = allData.filter(item => item.category === 'yang_stock' && !/^[A-Za-z]/.test(item.code));
-        render(filtered);
-    } else if (filter === 'YANG_US') {
-        const filtered = allData.filter(item => item.category === 'yang_stock' && /^[A-Za-z]/.test(item.code));
+    } else if (filter === 'YANG_STOCK') {
+        const filtered = allData.filter(item => item.category === 'yang_stock');
         render(filtered);
     }
 }
@@ -200,15 +196,6 @@ function render(data) {
     themes.forEach((themeName, index) => {
         const themeStocks = data.filter(s => s.theme === themeName);
         
-        let displayName = themeName;
-        if (themeName === '양 종목') {
-            if (currentFilter === 'YANG_DOMESTIC') {
-                displayName = '양 종목 (국내)';
-            } else if (currentFilter === 'YANG_US') {
-                displayName = '양 종목 (미국)';
-            }
-        }
-
         const card = document.createElement('div');
         card.className = 'theme-card';
         card.style.animationDelay = `${index * 0.1}s`;
@@ -334,7 +321,7 @@ function render(data) {
 
         card.innerHTML = `
             <div class="theme-header">
-                <div class="theme-name">${displayName}</div>
+                <div class="theme-name">${themeName}</div>
             </div>
             <div class="stock-list">
                 ${stocksHtml}
