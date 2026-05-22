@@ -31,6 +31,7 @@ function filterData(filter) {
         if (filter === 'US_NDQ') keyword = '나스닥';
         if (filter === 'US_RSL') keyword = 'Russell 1000';
         if (filter === 'HEATMAP') keyword = '히트맵';
+        if (filter === 'YANG_STOCK') keyword = '양 종목';
         btn.classList.toggle('active', btn.textContent.trim() === keyword);
     });
 
@@ -63,6 +64,9 @@ function filterData(filter) {
         render(filtered);
     } else if (filter === 'HEATMAP') {
         renderHeatmap();
+    } else if (filter === 'YANG_STOCK') {
+        const filtered = allData.filter(item => item.category === 'yang_stock');
+        render(filtered);
     }
 }
 
@@ -99,7 +103,37 @@ function createHeatmapSection(title, data) {
     const section = document.createElement('section');
     section.className = 'heatmap-section';
 
-    const items = [...data]
+    // 중복 종목 제거 및 테마 병합
+    const uniqueItemsMap = new Map();
+    data.forEach(item => {
+        const key = item.code || item.name;
+        if (uniqueItemsMap.has(key)) {
+            const existing = uniqueItemsMap.get(key);
+            if (item.theme && !existing.themes.includes(item.theme)) {
+                existing.themes.push(item.theme);
+            }
+        } else {
+            uniqueItemsMap.set(key, {
+                ...item,
+                themes: item.theme ? [item.theme] : []
+            });
+        }
+    });
+
+    const uniqueItems = Array.from(uniqueItemsMap.values()).map(item => {
+        const fullThemes = item.themes.join(', ');
+        let displayTheme = fullThemes;
+        if (item.themes.length > 2) {
+            displayTheme = item.themes.slice(0, 2).join(', ') + '...';
+        }
+        return {
+            ...item,
+            theme: displayTheme,
+            fullTheme: fullThemes
+        };
+    });
+
+    const items = uniqueItems
         .sort((a, b) => getSizeMetric(b) - getSizeMetric(a))
         .slice(0, 36);
 
@@ -110,10 +144,13 @@ function createHeatmapSection(title, data) {
         const peakLabel = flags.includes('고점주의') ? '고점주의' : '고점아님';
         const sizeLabel = item.market_cap ? '시총 기준' : '거래대금 기준';
         return `
-            <div class="heatmap-tile" title="${sizeLabel}" style="--tile-color:${getHeatColor(change)}; grid-column: span ${span.col}; grid-row: span ${span.row};">
+            <div class="heatmap-tile" title="${sizeLabel}\n테마: ${item.fullTheme}" style="--tile-color:${getHeatColor(change)}; grid-column: span ${span.col}; grid-row: span ${span.row};">
                 <div class="heatmap-stock">${item.name}</div>
-                <div class="heatmap-theme">${item.theme}</div>
-                <div class="heatmap-change">${item.change_1m || 'N/A'}</div>
+                <div class="heatmap-theme" title="${item.fullTheme}">${item.theme}</div>
+                <div class="heatmap-change">
+                    <span>1M: ${item.change_1m || 'N/A'}</span>
+                    <span style="opacity: 0.8; font-size: 0.7rem; font-weight: 700; margin-left: 2px;">3M: ${item.change_3m || 'N/A'}</span>
+                </div>
                 <span class="heatmap-flag">${peakLabel}</span>
             </div>
         `;
@@ -139,8 +176,8 @@ function renderHeatmap() {
         return;
     }
 
-    container.appendChild(createHeatmapSection('국내 테마 히트맵 (크기: 시가총액 / 색상: 1개월 수익률)', domesticTheme));
-    container.appendChild(createHeatmapSection('미국 테마 히트맵 (크기: 시가총액 / 색상: 1개월 수익률)', usTheme));
+    container.appendChild(createHeatmapSection('국내 테마 히트맵 (크기: 시가총액 / 색상: 1M, 3M 수익률)', domesticTheme));
+    container.appendChild(createHeatmapSection('미국 테마 히트맵 (크기: 시가총액 / 색상: 1M, 3M 수익률)', usTheme));
 }
 
 function render(data) {
@@ -191,12 +228,34 @@ function render(data) {
             // 프리미엄 지표 HTML 생성
             let premiumHtml = '';
             if (s.upside && s.upside !== "N/A") {
-                const fairValue = s.fair_value && s.fair_value !== "N/A" ? Number(s.fair_value).toLocaleString() : "분석중";
-                const currentPrice = s.current_price ? Number(s.current_price).toLocaleString() : "N/A";
+                const isUS = /^[A-Za-z]/.test(s.code);
+                const currency = isUS ? '$' : '원';
+                const fVal = s.fair_value && s.fair_value !== "N/A" ? Number(s.fair_value).toLocaleString() : "분석중";
+                const cVal = s.current_price ? Number(s.current_price).toLocaleString() : "N/A";
+                
+                const fairValueDisplay = isUS && fVal !== "분석중" ? `${currency}${fVal}` : (fVal !== "분석중" ? `${fVal}${currency}` : fVal);
+                const currentPriceDisplay = isUS ? `${currency}${cVal}` : `${cVal}${currency}`;
+                
                 premiumHtml = `
                     <div class="upside-row">
-                        <span class="fair-value">적정가 ${fairValue} <span style="margin-left: 8px; opacity: 0.6;">현재가 ${currentPrice}</span></span>
+                        <span class="fair-value">적정가 ${fairValueDisplay} <span style="margin-left: 8px; opacity: 0.6;">현재가 ${currentPriceDisplay}</span></span>
                         <span class="upside-badge">${s.upside} 여력</span>
+                    </div>
+                `;
+            }
+
+            // 양 종목을 위한 내 수익률/매수가 영역 추가
+            let purchaseHtml = '';
+            if (s.category === 'yang_stock' && s.purchase_price && s.purchase_price !== "N/A") {
+                const myReturnClass = s.my_return && s.my_return.includes('+') ? 'up' : (s.my_return && s.my_return.includes('-') ? 'down' : '');
+                const isUS = /^[A-Za-z]/.test(s.code);
+                const currency = isUS ? '$' : '원';
+                const formattedPrice = Number(s.purchase_price).toLocaleString();
+                const displayPrice = isUS ? `${currency}${formattedPrice}` : `${formattedPrice}${currency}`;
+                purchaseHtml = `
+                    <div class="purchase-row" style="background: rgba(255,255,255,0.04); padding: 8px 10px; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px dashed rgba(255,255,255,0.1);">
+                        <span style="font-size: 0.8rem; color: #aaa; font-weight: 500;">내 매수가: <strong style="color: #fff; font-size: 0.85rem;">${displayPrice}</strong></span>
+                        <span class="change-val ${myReturnClass}" style="font-size: 0.85rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">수익률 ${s.my_return || 'N/A'}</span>
                     </div>
                 `;
             }
@@ -246,6 +305,7 @@ function render(data) {
 
             stocksHtml += `
                 <div class="stock-item-wrapper">
+                    ${purchaseHtml}
                     <div class="stock-item">
                         <span class="stock-name"><span class="rank">#${idx + 1}</span> ${s.name} ${changeHtml}</span>
                         <span class="profit-status ${statusClass}">${s.is_profitable}</span>

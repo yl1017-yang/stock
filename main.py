@@ -33,6 +33,28 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
+# requests 라이브러리 전체의 SSL 검증을 비활성화하는 몽키 패치 (yfinance/pandas_datareader 등 외부 호출 대비)
+try:
+    import requests
+    original_request = requests.Session.request
+    def unverified_request(self, *args, **kwargs):
+        kwargs['verify'] = False
+        return original_request(self, *args, **kwargs)
+    requests.Session.request = unverified_request
+except Exception as e:
+    print(f"requests SSL 몽키패치 적용 실패: {e}")
+
+# curl_cffi 라이브러리 전체의 SSL 검증을 비활성화하는 몽키 패치 (yfinance가 curl_cffi를 사용할 때 대비)
+try:
+    import curl_cffi.requests as curl_requests
+    original_curl_request = curl_requests.Session.request
+    def unverified_curl_request(self, *args, **kwargs):
+        kwargs['verify'] = False
+        return original_curl_request(self, *args, **kwargs)
+    curl_requests.Session.request = unverified_curl_request
+except Exception as e:
+    print(f"curl_cffi SSL 몽키패치 적용 실패: {e}")
+
 load_dotenv()
 
 # =================================================================
@@ -735,7 +757,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             if trading_value >= 3_000_000_000: score += 1
             if adv['grades'].get('growth') == '주의': score -= 1
             if drawdown > 0.50: score -= 3
-            if half_year_return < -30: score -= 2
+            if half_year_return < -40: score -= 2
             if quarter_return < -15: score -= 2
             if month_return < -10: score -= 2
             if upside_val > 80: score -= 1
@@ -745,10 +767,10 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             is_growth_value = (
                 score >= min_score
                 and 0.03 <= drawdown <= 0.50
-                and upside_val >= 12
+                and (upside_val >= 8 or (target_p == "N/A" and adv['grades']['profit'] in ('최고', '우수')))
                 and trading_value >= min_trading_value
                 and (curr_p >= ma20 or curr_p >= ma60)
-                and (theme_bonus or half_year_return > -30)
+                and (theme_bonus or half_year_return > -40)
                 and quarter_return > -15
                 and month_return > -10
                 and medium_volume_ok
@@ -1084,23 +1106,23 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
             if month_return < -10: score -= 2
             if upside_val > 90: score -= 1
 
-            # 점수가 높아도 상승여력, 3개월 흐름, 최근 진입 타이밍, 수급 회복 중 핵심 조건이 약하면 제외한다.
-            if not (
-                score >= 8
-                and upside_val >= 12
-                and quarter_return > -15
-                and month_return > -10
-                and (curr_p >= ma20 or curr_p >= ma50)
-                and medium_volume_ok
-            ):
-                continue
-            
             grades = {"profit": "보통", "health": "보통", "growth": "보통"}
             roe = info.get('returnOnEquity', 0)
             if roe > 0.15: grades["profit"] = "최고"
             elif roe > 0.10: grades["profit"] = "우수"
             if info.get('debtToEquity', 150) < 60: grades["health"] = "최고"
             elif info.get('debtToEquity', 150) < 100: grades["health"] = "우수"
+
+            # 점수가 높아도 상승여력, 3개월 흐름, 최근 진입 타이밍, 수급 회복 중 핵심 조건이 약하면 제외한다.
+            if not (
+                score >= 8
+                and (upside_val >= 8 or (target_p == "N/A" and grades["profit"] in ('최고', '우수')))
+                and quarter_return > -15
+                and month_return > -10
+                and (curr_p >= ma20 or curr_p >= ma50)
+                and medium_volume_ok
+            ):
+                continue
 
             # 카테고리 설정 (지수별)
             cat = 'us_sp'
@@ -1144,6 +1166,358 @@ def get_russell1000_tickers():
     except Exception as e:
         print(f"Russell 1000 수집 오류: {e}")
     return []
+
+# 11.5 양 종목 리스트 수집 및 개별 분석
+def scan_yang_stocks(fund_df, cap_df):
+    import os
+    import re
+    yang_stocks_file = 'yang_stocks.txt'
+    if not os.path.exists(yang_stocks_file):
+        try:
+            with open(yang_stocks_file, 'w', encoding='utf-8') as f:
+                f.write("# [양 종목 리스트]\n")
+                f.write("# 형식: 종목명(또는 코드), 매수가\n")
+                f.write("# 예: 삼성전자, 72000\n")
+                f.write("#     AAPL, 175\n")
+                f.write("삼성전자, 72000\n")
+                f.write("AAPL, 175\n")
+                f.write("TSLA, 180\n")
+        except Exception as e:
+            print(f"yang_stocks.txt 기본 파일 생성 실패: {e}")
+
+    # 국내 종목명 -> 종목코드 매핑 생성 (pykrx)
+    name_to_code = {}
+    try:
+        tickers = stock.get_market_ticker_list(market="ALL")
+        for t in tickers:
+            n = stock.get_market_ticker_name(t)
+            if n:
+                name_to_code[n.strip().replace(" ", "").lower()] = t
+    except Exception as e:
+        print(f"국내 종목 매핑 테이블 생성 실패: {e}")
+
+    yang_results = []
+    if not os.path.exists(yang_stocks_file):
+        return yang_results
+
+    print("yang_stocks.txt에서 종목 수집 및 개별 정밀 분석 중...")
+    try:
+        with open(yang_stocks_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except Exception as e:
+        print(f"yang_stocks.txt 파일 읽기 실패: {e}")
+        return yang_results
+
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        parts = [p.strip() for p in line.split(',')]
+        if not parts or not parts[0]:
+            continue
+        identifier = parts[0]
+        purchase_price = None
+        if len(parts) > 1:
+            try:
+                purchase_price = float(parts[1])
+            except:
+                pass
+        
+        def find_domestic_code(name_id):
+            clean_name = name_id.strip().replace(" ", "").lower()
+            
+            # 1. Try pykrx map
+            if name_to_code and clean_name in name_to_code:
+                return name_to_code[clean_name]
+                
+            # 2. Try static fallback map of major stocks
+            fallback_map = {
+                '삼성전자': '005930', 'sk하이닉스': '000660', 'lg에너지솔루션': '373220',
+                '삼성바이오로직스': '207940', '현대차': '005380', '기아': '000270',
+                '셀트리온': '068270', 'kb금융': '105560', '신한지주': '055550',
+                '포스코홀딩스': '005490', 'posco홀딩스': '005490', 'naver': '035420',
+                '네이버': '035420', '카카오': '035720', '삼성sdi': '006400',
+                'lg화학': '051910', '삼성물산': '028260', '현대모비스': '012330',
+                '하나금융지주': '086790', '메리츠금융지주': '138040', '포스코퓨처엠': '003670',
+                'lg전자': '066570', '두산에너빌리티': '034020', '크래프톤': '259960',
+                '동원산업': '006040', 'hmm': '011200', '대한항공': '003490',
+                '한국전력': '015760', 'sk이노베이션': '096770', '카카오페이': '377300',
+                '카카오뱅크': '323410', '하이브': '352820',
+                'kodex미국s&p500': '379800', 'tiger미국s&p500': '360750',
+                'tiger미국나스닥100': '133690', 'kodex200': '069500'
+            }
+            if clean_name in fallback_map:
+                return fallback_map[clean_name]
+                
+            # 3. Try Naver Autocomplete API
+            try:
+                import urllib.parse
+                url = f"https://ac.finance.naver.com/ac?q={urllib.parse.quote(name_id, encoding='euc-kr')}&q_enc=euc-kr&st=1&frm=stock&r_format=json&r_enc=euc-kr&r_unicode=1&t_koreng=1"
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                r = requests.get(url, headers=headers, verify=False, timeout=3)
+                data = r.json()
+                if data and 'items' in data and data['items'] and data['items'][0]:
+                    for item in data['items'][0]:
+                        item_name = item[0][0].strip().replace(" ", "").lower()
+                        if item_name == clean_name:
+                            return item[0][1]
+            except:
+                pass
+
+            # 4. Try Naver Search Page scraping as a last resort
+            try:
+                import urllib.parse
+                url = f"https://search.naver.com/search.naver?query={urllib.parse.quote(name_id)}+주식"
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                r = requests.get(url, headers=headers, verify=False, timeout=3)
+                soup = BeautifulSoup(r.text, 'html.parser')
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
+                    match = re.search(r'code=(\d{6})', href)
+                    if match:
+                        return match.group(1)
+                    match2 = re.search(r'domestic/stock/(\d{6})', href)
+                    if match2:
+                        return match2.group(1)
+            except:
+                pass
+
+            return None
+
+        def find_us_ticker_by_korean_name(name_id):
+            clean_name = name_id.strip().replace(" ", "").lower()
+            
+            # 1. Static map of extremely common US stocks
+            static_map = {
+                '마이크로소프트': 'MSFT', '테슬라': 'TSLA', '애플': 'AAPL',
+                '엔비디아': 'NVDA', '구글': 'GOOGL', '알파벳': 'GOOGL',
+                '아마존': 'AMZN', '메타': 'META', '페이스북': 'META',
+                '넷플릭스': 'NFLX', '마이크론': 'MU', '스타벅스': 'SBUX',
+                '코카콜라': 'KO', '펩시': 'PEP', '디즈니': 'DIS',
+                '나이키': 'NKE', '인텔': 'INTC', 'amd': 'AMD',
+                '브로드컴': 'AVGO', '퀄컴': 'QCOM', 'asml': 'ASML'
+            }
+            if clean_name in static_map:
+                return static_map[clean_name]
+            for k, v in static_map.items():
+                if k in clean_name:
+                    return v
+                
+            # 2. Try Naver Search page scraping for US stock ticker
+            try:
+                import urllib.parse
+                url = f"https://search.naver.com/search.naver?query={urllib.parse.quote(name_id)}+주식"
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+                r = requests.get(url, headers=headers, verify=False, timeout=3)
+                soup = BeautifulSoup(r.text, 'html.parser')
+                for a in soup.find_all('a', href=True):
+                    href = a['href']
+                    match = re.search(r'worldstock/stock/([A-Z]+)', href)
+                    if match:
+                        return match.group(1)
+                    match2 = re.search(r'symbol=\w+@([A-Z]+)', href)
+                    if match2:
+                        return match2.group(1)
+            except:
+                pass
+            return None
+
+        is_us = False
+        code = None
+        name = identifier
+        
+        # 국내 종목 판별: 6자리 숫자이거나 한글을 포함하는 경우
+        if re.match(r'^\d{6}$', identifier):
+            code = identifier
+            is_us = False
+            try:
+                name = stock.get_market_ticker_name(code) or identifier
+            except:
+                name = identifier
+        elif re.search(r'[ㄱ-ㅎㅏ-ㅣ가-힣]', identifier):
+            is_us = False
+            code = find_domestic_code(identifier)
+            if code:
+                try:
+                    name = stock.get_market_ticker_name(code) or identifier
+                except:
+                    name = identifier
+            else:
+                # 국내 매칭 실패 시 미국 주식 한국어명인지 확인
+                us_ticker = find_us_ticker_by_korean_name(identifier)
+                if us_ticker:
+                    is_us = True
+                    identifier = us_ticker
+                    name = identifier
+        else:
+            # 영어 식별자. 먼저 국내 시장에서 종목명 일치 여부 확인 후 없으면 미국 주식으로 판별
+            code = find_domestic_code(identifier)
+            if code:
+                try:
+                    name = stock.get_market_ticker_name(code) or identifier
+                except:
+                    name = identifier
+                is_us = False
+            else:
+                is_us = True
+        
+        if not is_us and not code:
+            print(f"⚠️ 국내 종목 코드/이름 매칭 실패: {identifier}")
+            continue
+
+        if is_us:
+            # 미국 주식 상세 분석
+            ticker_str = identifier.upper()
+            try:
+                ticker = yf.Ticker(ticker_str)
+                info = ticker.info
+                if not info or ('regularMarketPrice' not in info and 'currentPrice' not in info):
+                    continue
+                curr_p = info.get('regularMarketPrice') or info.get('currentPrice') or 0
+                if curr_p == 0:
+                    hist = ticker.history(period="1d")
+                    if not hist.empty:
+                        curr_p = hist['Close'].iloc[-1]
+                if curr_p == 0:
+                    continue
+                
+                name = info.get('shortName', ticker_str)
+                volume = info.get('volume', 0)
+                pe = info.get('trailingPE', 0) or info.get('forwardPE', 0) or 0
+                pb = info.get('priceToBook', 0) or 0
+                
+                month_return_str = get_1m_return(ticker_str, is_us=True)
+                quarter_return_str = get_3m_return(ticker_str, is_us=True)
+                month_return = _safe_float(month_return_str)
+                quarter_return = _safe_float(quarter_return_str)
+                
+                target_p = info.get('targetMeanPrice', "N/A")
+                upside_val = ((target_p / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
+                
+                rsi = 0
+                risk_flags = []
+                try:
+                    hist_3m = ticker.history(period="3mo")
+                    if not hist_3m.empty:
+                        rsi = calculate_rsi(hist_3m['Close'])
+                        ma20 = hist_3m['Close'].rolling(window=20).mean().iloc[-1] if len(hist_3m) >= 20 else 0
+                        high_52 = hist_3m['Close'].max()
+                        risk_flags = build_risk_flags(rsi, month_return, upside_val, curr_p, high_52, ma20)
+                except:
+                    pass
+                
+                grades = {"profit": "보통", "health": "보통", "growth": "보통"}
+                roe = info.get('returnOnEquity', 0)
+                if roe > 0.15: grades["profit"] = "최고"
+                elif roe > 0.10: grades["profit"] = "우수"
+                if _safe_float(info.get('debtToEquity', 150)) < 60: grades["health"] = "최고"
+                elif _safe_float(info.get('debtToEquity', 150)) < 100: grades["health"] = "우수"
+                
+                my_return = "N/A"
+                if purchase_price and curr_p > 0:
+                    ret = (curr_p / purchase_price - 1) * 100
+                    my_return = f"{ret:+.2f}%"
+                    
+                yang_results.append({
+                    'category': 'yang_stock',
+                    'theme': '양 종목',
+                    'name': name,
+                    'code': ticker_str,
+                    'volume': volume,
+                    'change_1m': f"{month_return:+.2f}%" if month_return != 0 else "0.00%",
+                    'change_3m': f"{quarter_return:+.2f}%" if quarter_return != 0 else "0.00%",
+                    'per': f"{pe:.2f}" if pe else "N/A",
+                    'pbr': f"{pb:.2f}" if pb else "N/A",
+                    'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
+                    'upside': f"{upside_val:+.2f}%" if target_p != "N/A" else "N/A",
+                    'fair_value': str(target_p),
+                    'current_price': curr_p,
+                    'rsi': rsi if rsi else "N/A",
+                    'risk_flags': risk_flags,
+                    'interest_level': "N/A",
+                    'interest_score': 0.0,
+                    'opinion': info.get('recommendationKey', "N/A").replace('_', ' ').title(),
+                    'grades': grades,
+                    'is_profitable': "Pass (양 종목)",
+                    'purchase_price': purchase_price if purchase_price else "N/A",
+                    'my_return': my_return
+                })
+            except Exception as e:
+                print(f"미국 종목 {ticker_str} 분석 실패: {e}")
+        
+        else:
+            # 국내 주식 상세 분석
+            try:
+                adv = get_naver_financials_advanced(code)
+                if not adv:
+                    continue
+                curr_p = adv['current_price']
+                if curr_p == 0 and not cap_df.empty and code in cap_df.index:
+                    curr_p = float(cap_df.loc[code, '종가'])
+                    
+                per, pbr, div = 999, 999, "N/A"
+                volume = 0
+                if not fund_df.empty and code in fund_df.index:
+                    row_f = fund_df.loc[code]
+                    per, pbr = float(row_f['PER']), float(row_f['PBR'])
+                    div = f"{float(row_f['DIV']):.2f}%" if row_f['DIV'] != 0 else "N/A"
+                else:
+                    per = float(adv['per']) if adv['per'] != "N/A" else 999
+                    pbr = float(adv['pbr']) if adv['pbr'] != "N/A" else 999
+                    div = adv['dividend']
+                    
+                if not cap_df.empty and code in cap_df.index:
+                    volume = int(cap_df.loc[code, '거래량'])
+                
+                month_return_str = get_1m_return(code, is_us=False)
+                quarter_return_str = get_3m_return(code, is_us=False)
+                month_return = _safe_float(month_return_str)
+                quarter_return = _safe_float(quarter_return_str)
+                
+                target_p = adv['target_price']
+                upside_val = ((float(target_p) / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
+                
+                rsi, risk_flags = get_domestic_risk_snapshot(code, curr_p, upside_val)
+                
+                my_return = "N/A"
+                if purchase_price and curr_p > 0:
+                    ret = (curr_p / purchase_price - 1) * 100
+                    my_return = f"{ret:+.2f}%"
+                    
+                yang_results.append({
+                    'category': 'yang_stock',
+                    'theme': '양 종목',
+                    'name': name,
+                    'code': code,
+                    'volume': volume,
+                    'change_1m': f"{month_return:+.2f}%" if month_return != 0 else "0.00%",
+                    'change_3m': f"{quarter_return:+.2f}%" if quarter_return != 0 else "0.00%",
+                    'per': f"{per:.2f}" if per != 999 else "N/A",
+                    'pbr': f"{pbr:.2f}" if pbr != 999 else "N/A",
+                    'dividend': div,
+                    'upside': f"{upside_val:+.2f}%" if target_p != "N/A" else "N/A",
+                    'fair_value': str(target_p),
+                    'current_price': curr_p,
+                    'rsi': rsi if rsi else "N/A",
+                    'risk_flags': risk_flags,
+                    'interest_level': "N/A",
+                    'interest_score': 0.0,
+                    'opinion': adv.get('opinion', 'N/A'),
+                    'grades': adv['grades'],
+                    'is_profitable': "Pass (양 종목)",
+                    'purchase_price': purchase_price if purchase_price else "N/A",
+                    'my_return': my_return
+                })
+            except Exception as e:
+                print(f"국내 종목 {code} ({name}) 분석 실패: {e}")
+                
+    return yang_results
 
 # 12. 전체 수집 파이프라인 실행
 # 국내 테마, 국내 성장 저평가, 미국 성장 저평가 결과를 합쳐 data.json으로 저장한다.
@@ -1202,6 +1576,10 @@ def main():
     if russell_tickers:
         # 러셀 1000에서 성장 테마와 일치하는 종목들을 찾기 위해 상위 700개를 우선 스캔 (확대)
         results.extend(scan_us_tickers(russell_tickers[:700], 'Russell 1000', leading_sectors, limit=30))
+
+    # 양 종목 분석 추가
+    print("\n--- [양 종목 분석 시작] ---")
+    results.extend(scan_yang_stocks(fund_df, cap_df))
 
     with open('data.json', 'w', encoding='utf-8') as f:
         import json
