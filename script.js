@@ -11,6 +11,7 @@ async function init() {
         
         if (allData.length > 0) {
             document.getElementById('update-time-val').textContent = allData[0].time;
+            renderTodayRadar();
             filterData('All'); // 초기 로딩 시 국내 테마 필터 즉시 적용
         }
     } catch (err) {
@@ -18,6 +19,94 @@ async function init() {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
     }
+}
+
+
+function includesAnyText(value, keywords) {
+    const text = Array.isArray(value) ? value.join(' ') : String(value || '');
+    return keywords.some(keyword => text.includes(keyword));
+}
+
+function isPassStock(item) {
+    return String(item.is_profitable || '').includes('Pass');
+}
+
+function isOverheatedStock(item) {
+    const rsi = Number(item.rsi) || 0;
+    return rsi >= 70 || includesAnyText(item.risk_flags, ['과열', '고점주의', '怨쇱뿴', '怨좎젏']);
+}
+
+function summarizeThemesForRadar() {
+    const domesticThemeItems = allData.filter(item => item.category === 'domestic_theme');
+    const themeMap = new Map();
+
+    domesticThemeItems.forEach(item => {
+        const theme = item.theme || '기타 테마';
+        const current = themeMap.get(theme) || {
+            theme,
+            stocks: [],
+            totalChange: 0,
+            changeCount: 0,
+            passCount: 0,
+            overheatCount: 0
+        };
+
+        const change = parsePercent(item.change_1m);
+        current.stocks.push(item);
+        current.totalChange += change;
+        current.changeCount += 1;
+        if (isPassStock(item)) current.passCount += 1;
+        if (isOverheatedStock(item)) current.overheatCount += 1;
+        themeMap.set(theme, current);
+    });
+
+    return Array.from(themeMap.values())
+        .map(theme => ({
+            ...theme,
+            avgChange: theme.changeCount ? theme.totalChange / theme.changeCount : 0
+        }))
+        .sort((a, b) => b.avgChange - a.avgChange)
+        .slice(0, 3);
+}
+
+function renderTodayRadar() {
+    const container = document.getElementById('today-radar-summary');
+    if (!container) return;
+
+    const radarThemes = summarizeThemesForRadar();
+    if (radarThemes.length === 0) {
+        container.innerHTML = '<div class="radar-empty">오늘 표시할 국내 테마 데이터가 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = radarThemes.map((item, index) => {
+        const changeClass = item.avgChange >= 0 ? 'up' : 'down';
+        const avgChange = `${item.avgChange >= 0 ? '+' : ''}${item.avgChange.toFixed(1)}%`;
+        const topStocks = item.stocks
+            .slice()
+            .sort((a, b) => parsePercent(b.change_1m) - parsePercent(a.change_1m))
+            .slice(0, 3)
+            .map(stock => stock.name)
+            .join(', ');
+
+        return `
+            <article class="radar-card">
+                <div class="radar-rank">${index + 1}</div>
+                <div class="radar-content">
+                    <div class="radar-theme-line">
+                        <strong>${item.theme}</strong>
+                        <span class="radar-change ${changeClass}">${avgChange}</span>
+                    </div>
+                    <div class="radar-meta">
+                        <span>재무 통과 ${item.passCount}개</span>
+                        <span>과열 ${item.overheatCount}개</span>
+                        <span>종목 ${item.stocks.length}개</span>
+                    </div>
+                    <div class="radar-stocks" title="${topStocks}">${topStocks || '대표 종목 없음'}</div>
+                </div>
+            </article>
+        `;
+    }).join('');
 }
 
 function filterData(filter) {
@@ -334,3 +423,5 @@ function render(data) {
 
 // 초기화 실행
 init();
+
+

@@ -66,6 +66,139 @@ h1 {
     animation: pulse-animation 2s infinite;
 }
 
+
+.today-radar {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 0 18px;
+    padding: 18px;
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(0, 242, 255, 0.08), rgba(112, 0, 255, 0.06));
+    animation: fadeIn 1s ease-out;
+}
+
+.today-radar-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.eyebrow {
+    margin: 0 0 4px;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    font-weight: 700;
+}
+
+.today-radar h2 {
+    margin: 0;
+    font-size: 1.45rem;
+    color: #fff;
+}
+
+.today-radar-copy {
+    margin: 0;
+    max-width: 460px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: right;
+    line-height: 1.45;
+}
+
+.radar-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.radar-card {
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.radar-rank {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--accent-color);
+    color: #000;
+    font-weight: 800;
+    font-size: 0.85rem;
+}
+
+.radar-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.radar-theme-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.radar-theme-line strong {
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.radar-change {
+    font-size: 0.9rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.radar-change.up { color: #ff4d4d; }
+.radar-change.down { color: #4d79ff; }
+
+.radar-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.radar-meta span {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.22);
+    color: var(--text-color);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.radar-stocks {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.radar-empty {
+    grid-column: 1 / -1;
+    padding: 18px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
 /* 컨트롤 영역 */
 .controls {
     margin-bottom: 20px;
@@ -443,6 +576,10 @@ footer {
 
 @media (max-width: 600px) {
     h1 { font-size: 2rem; }
+    .today-radar { padding: 14px; border-radius: 14px; }
+    .today-radar-header { display: block; }
+    .today-radar-copy { margin-top: 8px; text-align: left; }
+    .radar-summary { grid-template-columns: 1fr; }
     .dashboard-grid { grid-template-columns: 1fr; }
     .heatmap-grid {
         grid-template-columns: repeat(6, 1fr);
@@ -453,3 +590,4 @@ footer {
         grid-row: span 1 !important;
     }
 }
+
