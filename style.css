@@ -509,4 +509,83 @@ footer {
         grid-row: span 1 !important;
     }
 }
+.action-guide {
+    margin-top: 8px;
+    padding: 6px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.035);
+}
 
+.action-guide.ready {
+    border-color: rgba(0, 255, 136, 0.22);
+    background: rgba(0, 255, 136, 0.055);
+}
+
+.action-guide.caution {
+    border-color: rgba(255, 204, 0, 0.24);
+    background: rgba(255, 204, 0, 0.055);
+}
+
+.action-guide.danger {
+    border-color: rgba(255, 77, 77, 0.26);
+    background: rgba(255, 77, 77, 0.055);
+}
+
+.action-guide-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.action-guide-head strong {
+    font-size: 0.72rem;
+    color: #fff;
+}
+
+.action-guide-head span {
+    font-size: 0.64rem;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.action-price-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.action-price-grid span {
+    min-width: 0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+.action-price-grid b,
+.action-price-grid strong {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.action-price-grid b {
+    margin-bottom: 2px;
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.action-price-grid strong {
+    font-size: 0.73rem;
+    color: #00f2ff;
+}
+
+.action-guide p {
+    margin: 7px 0 0;
+    font-size: 0.67rem;
+    line-height: 1.35;
+    color: var(--text-color);
+}
