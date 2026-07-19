@@ -10,8 +10,9 @@ async function init() {
         document.getElementById('loading').style.display = 'none';
         
         if (allData.length > 0) {
-            document.getElementById('update-time-val').textContent = allData[0].time;
-            renderTodayRadar();
+            const latestItem = allData.find(item => item.time);
+            document.getElementById('update-time-val').textContent = latestItem ? latestItem.time : '-';
+            renderMarketStatus();
             filterData('All'); // 초기 로딩 시 국내 테마 필터 즉시 적용
         }
     } catch (err) {
@@ -22,93 +23,34 @@ async function init() {
 }
 
 
-function includesAnyText(value, keywords) {
-    const text = Array.isArray(value) ? value.join(' ') : String(value || '');
-    return keywords.some(keyword => text.includes(keyword));
-}
-
-function isPassStock(item) {
-    return String(item.is_profitable || '').includes('Pass');
-}
-
-function isOverheatedStock(item) {
-    const rsi = Number(item.rsi) || 0;
-    return rsi >= 70 || includesAnyText(item.risk_flags, ['과열', '고점주의', '怨쇱뿴', '怨좎젏']);
-}
-
-function summarizeThemesForRadar() {
-    const domesticThemeItems = allData.filter(item => item.category === 'domestic_theme');
-    const themeMap = new Map();
-
-    domesticThemeItems.forEach(item => {
-        const theme = item.theme || '기타 테마';
-        const current = themeMap.get(theme) || {
-            theme,
-            stocks: [],
-            totalChange: 0,
-            changeCount: 0,
-            passCount: 0,
-            overheatCount: 0
-        };
-
-        const change = parsePercent(item.change_1m);
-        current.stocks.push(item);
-        current.totalChange += change;
-        current.changeCount += 1;
-        if (isPassStock(item)) current.passCount += 1;
-        if (isOverheatedStock(item)) current.overheatCount += 1;
-        themeMap.set(theme, current);
-    });
-
-    return Array.from(themeMap.values())
-        .map(theme => ({
-            ...theme,
-            avgChange: theme.changeCount ? theme.totalChange / theme.changeCount : 0
-        }))
-        .sort((a, b) => b.avgChange - a.avgChange)
-        .slice(0, 3);
-}
-
-function renderTodayRadar() {
-    const container = document.getElementById('today-radar-summary');
+function renderMarketStatus() {
+    const container = document.getElementById('market-status-line');
     if (!container) return;
 
-    const radarThemes = summarizeThemesForRadar();
-    if (radarThemes.length === 0) {
-        container.innerHTML = '<div class="radar-empty">오늘 표시할 국내 테마 데이터가 없습니다.</div>';
+    const statusItem = allData.find(item => item.category === 'market_status');
+    const rows = statusItem && Array.isArray(statusItem.market_status) ? statusItem.market_status : [];
+    if (rows.length === 0) {
+        container.hidden = true;
         return;
     }
 
-    container.innerHTML = radarThemes.map((item, index) => {
-        const changeClass = item.avgChange >= 0 ? 'up' : 'down';
-        const avgChange = `${item.avgChange >= 0 ? '+' : ''}${item.avgChange.toFixed(1)}%`;
-        const topStocks = item.stocks
-            .slice()
-            .sort((a, b) => parsePercent(b.change_1m) - parsePercent(a.change_1m))
-            .slice(0, 3)
-            .map(stock => stock.name)
-            .join(', ');
-
+    container.hidden = false;
+    container.innerHTML = rows.map(row => {
+        const flags = Array.isArray(row.flags) ? row.flags : [];
+        const level = row.level || 'N/A';
+        const levelClass = level === '위험' ? 'danger' : (level === '주의' ? 'caution' : 'stable');
+        const flagText = flags.length ? flags.join(', ') : '정상';
+        const changeText = row.change_1m && row.change_1m !== 'N/A' ? `1M ${row.change_1m}` : '1M N/A';
         return `
-            <article class="radar-card">
-                <div class="radar-rank">${index + 1}</div>
-                <div class="radar-content">
-                    <div class="radar-theme-line">
-                        <strong>${item.theme}</strong>
-                        <span class="radar-change ${changeClass}">${avgChange}</span>
-                    </div>
-                    <div class="radar-meta">
-                        <span>재무 통과 ${item.passCount}개</span>
-                        <span>과열 ${item.overheatCount}개</span>
-                        <span>종목 ${item.stocks.length}개</span>
-                    </div>
-                    <div class="radar-stocks" title="${topStocks}">${topStocks || '대표 종목 없음'}</div>
-                </div>
-            </article>
+            <span class="market-chip ${levelClass}" title="3M ${row.change_3m || 'N/A'} / ${flagText}">
+                <strong>${row.market}</strong>
+                <span>${level}</span>
+                <em>${changeText}</em>
+                <small>${flagText}</small>
+            </span>
         `;
     }).join('');
 }
-
 function filterData(filter) {
     currentFilter = filter;
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -129,7 +71,7 @@ function filterData(filter) {
         const filtered = allData.filter(item => item.category === 'domestic_theme');
         render(filtered);
     } else if (filter === 'Pass') {
-        const filtered = allData.filter(item => item.is_profitable.includes('Pass') && item.category === 'domestic_theme');
+        const filtered = allData.filter(item => (item.is_profitable || '').includes('Pass') && item.category === 'domestic_theme');
         render(filtered);
     } else if (filter === 'Value') {
         // 국내 저평가 카테고리 필터링
@@ -328,7 +270,7 @@ function render(data) {
                 premiumHtml = `
                     <div class="upside-row">
                         <span class="fair-value">적정가 ${fairValueDisplay} <span style="margin-left: 8px; opacity: 0.6;">현재가 ${currentPriceDisplay}</span></span>
-                        <span class="upside-badge">${s.upside} 여력</span>
+                        <span class="upside-badge">${s.upside} 목표가대비</span>
                     </div>
                 `;
             }

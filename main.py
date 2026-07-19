@@ -106,15 +106,18 @@ US_HOT_THEME_BASKETS = {
     '양자컴퓨팅': ['IBM', 'IONQ', 'RGTI', 'QBTS', 'QUBT', 'GOOGL', 'MSFT', 'HON']
 }
 
+# .env의 기능 플래그를 bool 값으로 해석한다. 값이 없으면 호출부 기본값을 따른다.
 def is_feature_enabled(flag_name, default=True):
     value = os.getenv(flag_name)
     if value is None:
         return default
     return value.lower() in ('1', 'true', 'yes', 'y', 'on')
 
+# 네이버 뉴스 API가 반환하는 HTML 태그와 엔티티를 화면/점수 계산용 평문으로 정리한다.
 def strip_html(text):
     return re.sub(r'<[^>]+>', '', text or '').replace('&quot;', '"').replace('&amp;', '&').strip()
 
+# 숫자 관심도 점수를 UI에 보여줄 단계형 라벨로 변환한다.
 def get_interest_level(score):
     if score >= 4:
         return "강함"
@@ -558,6 +561,7 @@ def _safe_float(value, default=0):
     except:
         return default
 
+# 종가 시계열로 RSI를 계산한다. 데이터가 부족하면 과열 판단을 생략하도록 0을 반환한다.
 def calculate_rsi(close_series, period=14):
     if close_series is None or len(close_series) <= period:
         return 0
@@ -571,6 +575,7 @@ def calculate_rsi(close_series, period=14):
     rs = avg_gain / avg_loss
     return round(100 - (100 / (1 + rs)), 2)
 
+# 개별 종목의 과열/고점 위험 신호를 공통 배지 배열로 만든다.
 def build_risk_flags(rsi=0, month_return=0, upside_val=0, current_price=0, high_52=0, ma20=0):
     flags = []
     if rsi >= 80:
@@ -591,6 +596,7 @@ def build_risk_flags(rsi=0, month_return=0, upside_val=0, current_price=0, high_
         flags.insert(0, "고점주의")
     return flags
 
+# 국내 종목의 최근 가격 데이터로 RSI와 위험 플래그를 한 번에 계산한다.
 def get_domestic_risk_snapshot(code, display_price=0, upside_val=0):
     try:
         end_date = datetime.now().strftime("%Y%m%d")
@@ -608,13 +614,137 @@ def get_domestic_risk_snapshot(code, display_price=0, upside_val=0):
     except Exception:
         return 0, []
 
+# 같은 시장 신호가 여러 조건에서 중복으로 붙지 않도록 순서를 유지해 제거한다.
+def _unique_flags(flags):
+    unique = []
+    for flag in flags:
+        if flag and flag not in unique:
+            unique.append(flag)
+    return unique
+
+# 지수의 수익률과 이동평균 위치를 기준으로 시장 공통 위험 플래그를 만든다.
+def _get_market_flags(close, ma20, ma60, month_return, quarter_return):
+    flags = []
+    if month_return <= -4 or quarter_return <= -10:
+        flags.append("시장하락")
+    if ma60 and close < ma60:
+        flags.append("지수60일선이탈")
+    if ma20 and ma60 and close < ma20 and close < ma60 and (month_return <= -4 or quarter_return <= -10):
+        flags.append("시장위험")
+    return _unique_flags(flags)
+
+# 시장 플래그 목록을 헤더 배지에 표시할 양호/주의/위험 단계로 축약한다.
+def _market_level(flags):
+    if "시장위험" in flags:
+        return "위험"
+    if flags:
+        return "주의"
+    return "양호"
+
+# 국내/해외 지수 공통 포맷을 만든다. UI는 이 구조만 보고 헤더 배지를 렌더링한다.
+def _build_market_snapshot(label, close_series):
+    close = close_series.dropna()
+    if len(close) < 60:
+        return {
+            'market': label,
+            'level': 'N/A',
+            'change_1m': 'N/A',
+            'change_3m': 'N/A',
+            'flags': ['데이터부족']
+        }
+
+    current = _safe_float(close.iloc[-1])
+    month_return = (current / _safe_float(close.iloc[-20]) - 1) * 100
+    quarter_return = (current / _safe_float(close.iloc[-60]) - 1) * 100
+    ma20 = _safe_float(close.rolling(window=20).mean().iloc[-1])
+    ma60 = _safe_float(close.rolling(window=60).mean().iloc[-1])
+    flags = _get_market_flags(current, ma20, ma60, month_return, quarter_return)
+
+    return {
+        'market': label,
+        'level': _market_level(flags),
+        'change_1m': f"{month_return:+.2f}%",
+        'change_3m': f"{quarter_return:+.2f}%",
+        'current': round(current, 2),
+        'ma20': round(ma20, 2) if ma20 else 'N/A',
+        'ma60': round(ma60, 2) if ma60 else 'N/A',
+        'flags': flags if flags else ['정상']
+    }
+
+# KRX 지수 OHLCV로 코스피/코스닥 시장 상태를 계산한다.
+# KRX 지수 API는 차단/빈 응답이 잦으므로 실패하면 Yahoo Finance 지수 티커로 대체한다.
+def get_domestic_index_market_snapshot(label, ticker, fallback_ticker=None):
+    try:
+        end_date = datetime.now().strftime("%Y%m%d")
+        start_date = (datetime.now() - timedelta(days=220)).strftime("%Y%m%d")
+        df = stock.get_index_ohlcv_by_date(start_date, end_date, ticker)
+        if df.empty or '종가' not in df:
+            raise ValueError('empty index data')
+        snapshot = _build_market_snapshot(label, df['종가'])
+        snapshot['source'] = 'KRX'
+        return snapshot
+    except Exception as e:
+        print(f"{label} KRX 시장 상태 수집 실패: {e}")
+
+    if fallback_ticker:
+        snapshot = get_us_index_market_snapshot(label, fallback_ticker)
+        snapshot['source'] = 'Yahoo Finance'
+        if snapshot.get('flags') != ['수집실패']:
+            return snapshot
+
+    return {
+        'market': label,
+        'level': 'N/A',
+        'change_1m': 'N/A',
+        'change_3m': 'N/A',
+        'flags': ['수집실패'],
+        'source': 'KRX/Yahoo Finance'
+    }
+
+# yfinance 지수 히스토리로 미국 주요 지수 시장 상태를 계산한다.
+def get_us_index_market_snapshot(label, ticker):
+    try:
+        hist = yf.Ticker(ticker).history(period='6mo', auto_adjust=False)
+        if hist.empty or 'Close' not in hist:
+            raise ValueError('empty index data')
+        return _build_market_snapshot(label, hist['Close'])
+    except Exception as e:
+        print(f"{label} 시장 상태 수집 실패: {e}")
+        return {
+            'market': label,
+            'level': 'N/A',
+            'change_1m': 'N/A',
+            'change_3m': 'N/A',
+            'flags': ['수집실패']
+        }
+
+# data.json 배열 끝에 들어갈 시장 상태 메타 항목을 생성한다. 종목 카드 렌더링 대상은 아니다.
+def get_market_status_item():
+    snapshots = [
+        get_domestic_index_market_snapshot('코스피', '1001', '^KS11'),
+        get_domestic_index_market_snapshot('코스닥', '2001', '^KQ11'),
+        get_us_index_market_snapshot('S&P500', '^GSPC'),
+        get_us_index_market_snapshot('나스닥', '^IXIC'),
+        get_us_index_market_snapshot('Russell 1000', '^RUI'),
+    ]
+    return {
+        'category': 'market_status',
+        'theme': '시장 상태',
+        'name': '시장 상태',
+        'code': 'MARKET_STATUS',
+        'market_status': snapshots,
+        'time': datetime.now().strftime('%Y-%m-%d %H:%M')
+    }
+# 카카오 알림 길이 제한을 맞추기 위해 긴 종목명을 짧게 줄인다.
 def _compact_name(name, max_len=10):
     text = str(name or "N/A").strip()
     return text if len(text) <= max_len else text[:max_len - 1] + "…"
 
+# 알림 TOP10은 단기 회복 강도를 보기 위해 1개월 수익률 기준으로 정렬한다.
 def _sort_by_1m_return(items):
     return sorted(items, key=lambda item: _safe_float(item.get('change_1m')), reverse=True)
 
+# 카카오 알림 한 줄에 들어갈 종목명, 1개월 수익률, 상승여력, 위험 플래그를 조합한다.
 def _format_alert_line(item, index):
     name = _compact_name(item.get('name'))
     change_1m = item.get('change_1m') or "N/A"
@@ -624,6 +754,7 @@ def _format_alert_line(item, index):
     suffix = f" / {upside}" if upside else ""
     return f"{index}. {name} {change_1m}{suffix}{risk_text}"
 
+# 카카오 메시지 길이 제한을 넘지 않도록 섹션별 알림 문구를 여러 메시지로 나눈다.
 def _split_kakao_text(title, lines, max_len=180):
     messages = []
     current = title
@@ -638,6 +769,7 @@ def _split_kakao_text(title, lines, max_len=180):
         messages.append(current)
     return messages
 
+# S&P500/나스닥/Russell 스캔 결과에서 같은 티커가 중복 알림되지 않도록 제거한다.
 def _unique_by_code(items):
     seen = set()
     unique_items = []
@@ -649,6 +781,7 @@ def _unique_by_code(items):
         unique_items.append(item)
     return unique_items
 
+# 최종 결과를 국내/미국 테마와 저평가 TOP10 알림 메시지로 변환한다.
 def build_kakao_alert_messages(results):
     us_value_items = _unique_by_code([
         item for item in results
@@ -1168,6 +1301,7 @@ def get_russell1000_tickers():
     return []
 
 # 11.5 양 종목 리스트 수집 및 개별 분석
+# yang_stocks.txt에 적어둔 개인 관심/보유 종목을 국내외로 나누어 별도 분석한다.
 def scan_yang_stocks(fund_df, cap_df):
     import os
     import re
@@ -1531,6 +1665,7 @@ def main():
 
     top_themes, growth_focus = get_automated_growth_themes()
     results = []
+    market_status_item = get_market_status_item()
     
     print("시장 투자지표 수집 중...")
     fund_df, cap_df = pd.DataFrame(), pd.DataFrame()
@@ -1580,6 +1715,7 @@ def main():
     # 양 종목 분석 추가
     print("\n--- [양 종목 분석 시작] ---")
     results.extend(scan_yang_stocks(fund_df, cap_df))
+    results.append(market_status_item)
 
     with open('data.json', 'w', encoding='utf-8') as f:
         import json
@@ -1591,7 +1727,8 @@ def main():
             indent=2,
             default=lambda value: value.item() if hasattr(value, "item") else str(value)
         )
-    print(f"\n✅ 분석 완료! {len(results)}개 종목 저장됨.")
+    stock_count = sum(1 for item in results if item.get('category') != 'market_status')
+    print(f"\n✅ 분석 완료! {stock_count}개 종목 저장됨.")
 
     alert_messages = build_kakao_alert_messages(results)
     for message in alert_messages:
