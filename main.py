@@ -73,6 +73,10 @@ CORE_GROWTH_KEYWORDS = [
     '배터리', '2차전지', '전고체', 'ESS',
     '바이오', '우주', '항공', '방산',
     '에너지', 'SMR', '원전',
+    '화장품', 'K뷰티', '뷰티', '미용기기', 'ODM', 'OEM',
+    '소비재', '필수소비재', '경기소비재', '글로벌소비재', '브랜드',
+    '엔터', '엔터테인먼트', 'K팝', 'KPOP', '콘텐츠', '웹툰', '미디어',
+    '게임', '게임주', '모바일게임', '콘솔', 'IP',
     '자율주행', '양자', '양자보안', '플랫폼', '혁신'
 ]
 OLD_ECONOMY_KEYWORDS = ['음식료', '섬유', '의복', '종이', '목재', '건설', '유통', '시멘트', '가구']
@@ -99,7 +103,7 @@ US_HOT_THEME_BASKETS = {
     '전력 인프라': ['GEV', 'ETN', 'VRT', 'PWR', 'CEG', 'NRG', 'HUBB', 'EME'],
     '방산 / 우주항공': ['LMT', 'RTX', 'NOC', 'GD', 'BA', 'LHX', 'HWM', 'RKLB'],
     '비만치료 / 바이오': ['LLY', 'NVO', 'AMGN', 'REGN', 'VRTX', 'ISRG', 'TMO', 'DHR'],
-    '사이버보안': ['CRWD', 'PANW', 'FTNT', 'ZS', 'OKTA', 'NET', 'S', 'CYBR'],
+    '사이버보안': ['CRWD', 'PANW', 'FTNT', 'ZS', 'OKTA', 'NET', 'S'],
     '핀테크 / 크립토': ['COIN', 'HOOD', 'SQ', 'PYPL', 'MSTR', 'IBIT', 'MARA', 'RIOT'],
     '원전 / 에너지': ['CEG', 'VST', 'CCJ', 'BWXT', 'SMR', 'XOM', 'CVX', 'SLB'],
     '로봇 / 자동화': ['ISRG', 'TER', 'ROK', 'SYK', 'ABBNY', 'ZBRA', 'PATH', 'SYM'],
@@ -895,7 +899,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             if month_return < -10: score -= 2
             if upside_val > 80: score -= 1
 
-            min_score = 7 if theme_bonus else 8
+            min_score = 6 if theme_bonus else 7
             min_trading_value = 1_000_000_000 if theme_bonus else 2_000_000_000
             is_growth_value = (
                 score >= min_score
@@ -904,9 +908,9 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                 and trading_value >= min_trading_value
                 and (curr_p >= ma20 or curr_p >= ma60)
                 and (theme_bonus or half_year_return > -40)
-                and quarter_return > -15
-                and month_return > -10
-                and medium_volume_ok
+                and quarter_return > -20
+                and month_return > -12
+                and (theme_bonus or medium_volume_ok)
             )
 
             if not is_growth_value:
@@ -1248,12 +1252,12 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
 
             # 점수가 높아도 상승여력, 3개월 흐름, 최근 진입 타이밍, 수급 회복 중 핵심 조건이 약하면 제외한다.
             if not (
-                score >= 8
+                score >= 7
                 and (upside_val >= 8 or (target_p == "N/A" and grades["profit"] in ('최고', '우수')))
-                and quarter_return > -15
-                and month_return > -10
+                and quarter_return > -20
+                and month_return > -12
                 and (curr_p >= ma20 or curr_p >= ma50)
-                and medium_volume_ok
+                and (medium_volume_ok or volume_recovering)
             ):
                 continue
 
