@@ -1660,12 +1660,10 @@ def scan_yang_stocks(fund_df, cap_df):
 # 12. 전체 수집 파이프라인 실행
 # 국내 테마, 국내 성장 저평가, 미국 성장 저평가 결과를 합쳐 data.json으로 저장한다.
 def main():
-    # DART 키가 있으면 기업 목록을 미리 로드한다. 현재 로직에서는 확장 대비 성격이 강하다.
+    # DART 키는 설정만 한다. 전체 기업 목록 선로딩은 느리고, 현재 로직에서는 사용하지 않는다.
     dart_api_key = os.getenv('DART_API_KEY')
     if dart_api_key:
         dart.set_api_key(api_key=dart_api_key)
-        corp_list = dart.get_corp_list()
-    else: corp_list = None
 
     top_themes, growth_focus = get_automated_growth_themes()
     results = []
