@@ -483,9 +483,15 @@ function render(data) {
                 const displayPrice = isUS ? `${currency}${formattedPrice}` : `${formattedPrice}${currency}`;
                 purchaseHtml = `
                     <div class="purchase-row" style="background: rgba(255,255,255,0.04); padding: 8px 10px; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px dashed rgba(255,255,255,0.1);">
-                        <span style="font-size: 0.8rem; color: #aaa; font-weight: 500;">내 매수가: <strong style="color: #fff; font-size: 0.85rem;">${displayPrice}</strong></span>
+                        <span style="font-size: 0.8rem; color: #aaa; font-weight: 500;">토스 평균단가: <strong style="color: #fff; font-size: 0.85rem;">${displayPrice}</strong>${s.quantity ? ` · ${Number(s.quantity).toLocaleString()}주` : ''}</span>
                         <span class="change-val ${myReturnClass}" style="font-size: 0.85rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">수익률 ${s.my_return || 'N/A'}</span>
                     </div>
+                    ${`
+                        <div class="purchase-row" style="background: rgba(255,255,255,0.025); padding: 7px 10px; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; color: #aaa; font-size: 0.78rem;">
+                            <span>평가금액 <strong style="color:#fff;">${isUS ? '$' : ''}${Number(s.market_value || 0).toLocaleString()}${isUS ? '' : '원'}</strong></span>
+                            <span>평가손익 <strong class="${Number(s.profit_loss) >= 0 ? 'up' : 'down'}">${Number(s.profit_loss) >= 0 ? '+' : ''}${isUS ? '$' : ''}${Number(s.profit_loss || 0).toLocaleString()}${isUS ? '' : '원'}</strong></span>
+                        </div>
+                    `}
                 `;
             }
 
@@ -566,5 +572,3 @@ function render(data) {
 
 // 초기화 실행
 init();
-
-

@@ -15,6 +15,7 @@ import ssl
 import time
 import sys
 from kakao_api import send_kakao_message
+from toss_api import TossAPIError, get_daily_candles, get_holdings
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -88,6 +89,7 @@ POSITIVE_NEWS_KEYWORDS = ['수주', '투자', '증설', '공급', '계약', '흑
 NEGATIVE_NEWS_KEYWORDS = ['적자', '감자', '상장폐지', '소송', '조사', '리콜', '부진', '중단', '취소', '하락', '손실']
 NAVER_NEWS_CACHE = {}
 NAVER_DATALAB_CACHE = {}
+NAVER_FINANCIAL_CACHE = {}
 ALPHA_NEWS_CACHE = {}
 
 US_SECTOR_ETFS = {
@@ -292,22 +294,27 @@ def is_verified_growth_theme(theme):
 # 저평가 탐색용 성장 테마(growth_focus)는 4단계 검증 점수로 자동 선별한다.
 def get_automated_growth_themes():
     print("성장 주도 테마 자동 탐지 중...")
-    url = 'https://finance.naver.com/sise/theme.nhn'
+    url = 'https://m.stock.naver.com/api/stocks/theme'
     headers = {'User-Agent': 'Mozilla/5.0'}
     all_themes = []
     for page in range(1, 4):
-        response = requests.get(f"{url}?&page={page}", headers=headers, verify=False)
-        soup = BeautifulSoup(response.text, 'lxml')
-        rows = soup.select('table.type_1 tr')
-        for row in rows:
-            cols = row.select('td')
-            if len(cols) > 0:
-                name_tag = cols[0].select_one('a')
-                if name_tag:
-                    name = name_tag.text.strip()
-                    link = 'https://finance.naver.com' + name_tag['href']
-                    change = float(cols[1].text.strip().replace('%', '').replace('+', ''))
-                    all_themes.append({'name': name, 'link': link, 'change': change})
+        response = requests.get(
+            url,
+            params={'page': page, 'pageSize': 20},
+            headers=headers,
+            timeout=10,
+            verify=False
+        )
+        response.raise_for_status()
+        for group in response.json().get('groups', []):
+            theme_no = group.get('no')
+            if theme_no is None:
+                continue
+            all_themes.append({
+                'name': group.get('name', f'테마 {theme_no}'),
+                'link': f'https://m.stock.naver.com/api/stocks/theme/{theme_no}',
+                'change': _safe_float(group.get('changeRate'))
+            })
         time.sleep(0.1)
 
     ranked_themes = sorted(all_themes, key=lambda item: item['change'], reverse=True)
@@ -341,19 +348,25 @@ def get_automated_growth_themes():
 # 테마 상세 페이지에서 거래량 상위 종목을 가져와 이후 지표 수집 대상으로 사용한다.
 def get_stocks_in_theme(theme_link):
     headers = {'User-Agent': 'Mozilla/5.0'}
-    response = requests.get(theme_link, headers=headers, verify=False)
-    soup = BeautifulSoup(response.text, 'lxml')
-    stocks = []
-    rows = soup.select('table.type_5 tr')
-    for row in rows:
-        cols = row.select('td')
-        if len(cols) >= 10:
-            name_tag = cols[0].select_one('a')
-            if name_tag:
-                name = name_tag.text.strip()
-                code = name_tag['href'].split('=')[-1]
-                volume = int(cols[5].text.replace(',', ''))
-                stocks.append({'code': code, 'name': name, 'volume': volume})
+    response = requests.get(
+        theme_link,
+        params={'page': 1, 'pageSize': 100},
+        headers=headers,
+        timeout=10,
+        verify=False
+    )
+    response.raise_for_status()
+    stocks = [
+        {
+            'code': item.get('itemCode'),
+            'name': item.get('stockName'),
+            'volume': int(item.get('accumulatedTradingVolumeRaw') or 0),
+            'market_cap': _safe_float(item.get('marketValueRaw')),
+            'current_price': _safe_float(item.get('closePriceRaw')),
+        }
+        for item in response.json().get('stocks', [])
+        if item.get('itemCode') and item.get('stockName')
+    ]
     df = pd.DataFrame(stocks)
     return df.sort_values(by='volume', ascending=False).head(10) if not df.empty else df
 
@@ -387,6 +400,8 @@ def get_top_theme_stocks(top_themes, cap_df=None):
                         market_cap = _safe_float(cap_df.loc[code].get('시가총액'))
                     except Exception:
                         market_cap = 0
+                elif 'market_cap' in s:
+                    market_cap = _safe_float(s.get('market_cap'))
 
                 results.append({
                     'category': 'domestic_theme',
@@ -419,79 +434,97 @@ def get_top_theme_stocks(top_themes, cap_df=None):
 # 4. 네이버 금융 수집 (상세 지표 및 등급 산출용)
 # 현재가, PER/PBR, 배당, 목표가, 투자의견, 간단 재무 등급을 한 번에 수집한다.
 def get_naver_financials_advanced(code):
-    url = f"https://finance.naver.com/item/main.naver?code={code}"
+    """새 네이버 증권 JSON API에서 현재가, 밸류에이션과 컨센서스를 수집한다."""
+    if code in NAVER_FINANCIAL_CACHE:
+        return NAVER_FINANCIAL_CACHE[code]
+
     headers = {'User-Agent': 'Mozilla/5.0'}
     try:
-        res = requests.get(url, headers=headers, timeout=5, verify=False)
-        soup = BeautifulSoup(res.text, 'lxml')
-        current_price = 0
-        price_tag = soup.select_one('.no_today .blind')
-        if price_tag:
-            current_price = float(price_tag.text.strip().replace(',', ''))
+        basic_res = requests.get(
+            f"https://m.stock.naver.com/api/stock/{code}/basic",
+            headers=headers,
+            timeout=8,
+            verify=False
+        )
+        integration_res = requests.get(
+            f"https://m.stock.naver.com/api/stock/{code}/integration",
+            headers=headers,
+            timeout=8,
+            verify=False
+        )
+        basic_res.raise_for_status()
+        integration_res.raise_for_status()
+        basic = basic_res.json()
+        integration = integration_res.json()
 
-        per = soup.select_one('#_per').text.strip() if soup.select_one('#_per') else "N/A"
-        pbr = soup.select_one('#_pbr').text.strip() if soup.select_one('#_pbr') else "N/A"
-        dvd_tag = soup.select_one('#_dvd')
-        dvd = dvd_tag.text.strip() if dvd_tag else "N/A"
-        
-        target_price = "N/A"
-        opinion = "N/A"
-        aside = soup.select_one('.aside_invest_info')
-        if aside:
-            rows = aside.select('tr')
-            for row in rows:
-                th = row.select_one('th')
-                if not th: continue
-                th_text = th.text.replace(' ', '').replace('\n', '')
-                if '투자의견' in th_text or '목표주가' in th_text:
-                    ems = row.select('em')
-                    if len(ems) >= 2:
-                        target_price = ems[1].text.strip().replace(',', '')
-                        span = row.select_one('td span')
-                        opinion = span.text.strip() if span else ems[0].text.strip()
-                    elif len(ems) == 1:
-                        target_price = ems[0].text.strip().replace(',', '')
-                    break
+        def clean_number(value, default="N/A"):
+            if value in (None, "", "N/A"):
+                return default
+            match = re.search(r'-?[0-9,.]+', str(value))
+            return match.group(0).replace(',', '') if match else default
 
-        # [추가] 2차: 하단 컨센서스 테이블 (cns_report) 에서 보완 (데이터가 없을 경우)
-        if target_price == "N/A":
-            cns_table = soup.select_one('.cns_report')
-            if cns_table:
-                tp_tag = cns_table.select_one('em')
-                if tp_tag: target_price = tp_tag.text.strip().replace(',', '')
-                op_tag = cns_table.select_one('strong')
-                if op_tag: opinion = op_tag.text.strip()
+        info_by_code = {
+            item.get('code'): item.get('value')
+            for item in integration.get('totalInfos', [])
+            if item.get('code')
+        }
+        consensus = integration.get('consensusInfo') or {}
+        recommendation = clean_number(consensus.get('recommMean'))
+        opinion = f"{recommendation} 매수" if recommendation != "N/A" else "N/A"
 
-        # 재무제표 요약값을 4단계 등급으로 단순화해 카드 배지에 사용한다.
-        grades = {"profit": "보통", "health": "보통", "growth": "보통"}
-        table = soup.select_one('.section.cop_analysis table')
-        if table:
-            rows = table.select('tr')
-            for row in rows:
-                th = row.select_one('th')
-                if not th: continue
-                txt = th.text.strip()
-                tds = row.select('td')
-                if not tds or len(tds) < 4: continue
-                val_txt = tds[3].text.strip().replace(',', '')
-                try:
-                    val = float(val_txt)
-                    if 'ROE' in txt:
-                        if val > 15: grades["profit"] = "최고"
-                        elif val > 10: grades["profit"] = "우수"
-                        elif val < 0: grades["profit"] = "주의"
-                    elif '부채비율' in txt:
-                        if val < 60: grades["health"] = "최고"
-                        elif val < 100: grades["health"] = "우수"
-                        elif val > 200: grades["health"] = "주의"
-                    elif '영업이익률' in txt:
-                        if val > 20: grades["growth"] = "최고"
-                        elif val > 10: grades["growth"] = "우수"
-                except: pass
-
-        return {"current_price": current_price, "per": per, "pbr": pbr, "dividend": dvd, "target_price": target_price, "opinion": opinion, "grades": grades}
-    except Exception:
+        result = {
+            'current_price': _safe_float(clean_number(basic.get('closePrice')), 0),
+            'per': clean_number(info_by_code.get('per')),
+            'pbr': clean_number(info_by_code.get('pbr')),
+            'dividend': info_by_code.get('dividendYieldRatio') or "N/A",
+            'target_price': clean_number(consensus.get('priceTargetMean')),
+            'opinion': opinion,
+            'grades': {'profit': '보통', 'health': '보통', 'growth': '보통'}
+        }
+        NAVER_FINANCIAL_CACHE[code] = result
+        return result
+    except Exception as e:
+        print(f"네이버 종목 상세 조회 실패 ({code}): {e}")
         return None
+
+
+DOMESTIC_OHLCV_CACHE = {}
+
+
+def get_domestic_ohlcv(code):
+    """국내 일봉을 KRX에서 조회하고, 실패하면 토스증권 일봉으로 대체한다."""
+    if code in DOMESTIC_OHLCV_CACHE:
+        return DOMESTIC_OHLCV_CACHE[code].copy()
+
+    df = pd.DataFrame()
+    if os.getenv('KRX_ID') and os.getenv('KRX_PW'):
+        try:
+            end_date = datetime.now().strftime("%Y%m%d")
+            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
+            df = stock.get_market_ohlcv(start_date, end_date, code)
+        except Exception as e:
+            print(f"KRX 일봉 조회 실패 ({code}), 토스 fallback 사용: {e}")
+
+    if df.empty:
+        try:
+            candles = get_daily_candles(code, 200)
+            df = pd.DataFrame([
+                {
+                    '시가': _safe_float(item.get('openPrice')),
+                    '고가': _safe_float(item.get('highPrice')),
+                    '저가': _safe_float(item.get('lowPrice')),
+                    '종가': _safe_float(item.get('closePrice')),
+                    '거래량': _safe_float(item.get('volume')),
+                }
+                for item in candles
+            ])
+        except Exception as e:
+            print(f"토스 일봉 조회 실패 ({code}): {e}")
+            df = pd.DataFrame()
+
+    DOMESTIC_OHLCV_CACHE[code] = df.copy()
+    return df
+
 
 # 5. 이동평균 기반 턴어라운드 신호 확인
 # 현재는 성장 저평가 핵심 필터에서는 직접 쓰지 않지만,
@@ -507,7 +540,7 @@ def check_ma_turnaround(code, is_us=False):
             df = df[['Close']].rename(columns={'Close': '종가'})
             volume = ticker.info.get('volume', 0)
         else:
-            ohlcv = stock.get_market_ohlcv(start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d"), code)
+            ohlcv = get_domestic_ohlcv(code)
             if len(ohlcv) < 120: return False, 0
             df = ohlcv[['종가']].copy()
             volume = ohlcv.iloc[-1]['거래량']
@@ -538,9 +571,7 @@ def get_period_return(code, days=20, is_us=False):
             change = (current / past - 1) * 100
             return f"{change:+.2f}%"
         else:
-            end_date = datetime.now().strftime("%Y%m%d")
-            start_date = (datetime.now() - timedelta(days=days * 3)).strftime("%Y%m%d")
-            df = stock.get_market_ohlcv(start_date, end_date, code)
+            df = get_domestic_ohlcv(code)
             if len(df) < days: return "N/A"
             current = df['종가'].iloc[-1]
             past = df['종가'].iloc[-days]
@@ -603,9 +634,7 @@ def build_risk_flags(rsi=0, month_return=0, upside_val=0, current_price=0, high_
 # 국내 종목의 최근 가격 데이터로 RSI와 위험 플래그를 한 번에 계산한다.
 def get_domestic_risk_snapshot(code, display_price=0, upside_val=0):
     try:
-        end_date = datetime.now().strftime("%Y%m%d")
-        start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
-        df = stock.get_market_ohlcv(start_date, end_date, code)
+        df = get_domestic_ohlcv(code)
         if df.empty or len(df) < 20:
             return 0, []
         close = df['종가']
@@ -844,9 +873,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
             return None
 
         try:
-            end_date = datetime.now().strftime("%Y%m%d")
-            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
-            df_ohlcv = stock.get_market_ohlcv(start_date, end_date, code)
+            df_ohlcv = get_domestic_ohlcv(code)
             if df_ohlcv.empty or len(df_ohlcv) < 120:
                 return None
 
@@ -1304,358 +1331,67 @@ def get_russell1000_tickers():
         print(f"Russell 1000 수집 오류: {e}")
     return []
 
-# 11.5 양 종목 리스트 수집 및 개별 분석
-# yang_stocks.txt에 적어둔 개인 관심/보유 종목을 국내외로 나누어 별도 분석한다.
-def scan_yang_stocks(fund_df, cap_df):
-    import os
-    import re
-    yang_stocks_file = 'yang_stocks.txt'
-    if not os.path.exists(yang_stocks_file):
-        try:
-            with open(yang_stocks_file, 'w', encoding='utf-8') as f:
-                f.write("# [양 종목 리스트]\n")
-                f.write("# 형식: 종목명(또는 코드), 매수가\n")
-                f.write("# 예: 삼성전자, 72000\n")
-                f.write("#     AAPL, 175\n")
-                f.write("삼성전자, 72000\n")
-                f.write("AAPL, 175\n")
-                f.write("TSLA, 180\n")
-        except Exception as e:
-            print(f"yang_stocks.txt 기본 파일 생성 실패: {e}")
+# 11.5 토스증권 실제 보유종목 조회
+def scan_toss_holdings():
+    """토스증권 계좌의 실제 보유종목을 기존 대시보드 카드 구조로 변환한다."""
+    if not os.getenv('TOSS_CLIENT_ID') or not os.getenv('TOSS_CLIENT_SECRET'):
+        print("토스증권 API 키가 없어 계좌 보유종목 조회를 건너뜁니다.")
+        return []
 
-    # 국내 종목명 -> 종목코드 매핑 생성 (pykrx)
-    name_to_code = {}
     try:
-        tickers = stock.get_market_ticker_list(market="ALL")
-        for t in tickers:
-            n = stock.get_market_ticker_name(t)
-            if n:
-                name_to_code[n.strip().replace(" ", "").lower()] = t
-    except Exception as e:
-        print(f"국내 종목 매핑 테이블 생성 실패: {e}")
+        holdings = get_holdings()
+    except TossAPIError as e:
+        print(f"토스증권 보유종목 조회 실패: {e}")
+        return []
+    except requests.RequestException as e:
+        print(f"토스증권 네트워크 요청 실패: {e}")
+        return []
 
-    yang_results = []
-    if not os.path.exists(yang_stocks_file):
-        return yang_results
+    results = []
+    for item in holdings['items']:
+        symbol = item.get('symbol', '')
+        currency = item.get('currency', '')
+        quantity = _safe_float(item.get('quantity'))
+        average_price = _safe_float(item.get('averagePurchasePrice'))
+        current_price = _safe_float(item.get('lastPrice'))
+        market_value = item.get('marketValue') or {}
+        profit_loss = item.get('profitLoss') or {}
+        daily_profit_loss = item.get('dailyProfitLoss') or {}
 
-    print("yang_stocks.txt에서 종목 수집 및 개별 정밀 분석 중...")
-    try:
-        with open(yang_stocks_file, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-    except Exception as e:
-        print(f"yang_stocks.txt 파일 읽기 실패: {e}")
-        return yang_results
+        results.append({
+            'category': 'yang_stock',
+            'theme': f"양 종목 (토스 {item.get('marketCountry', '')})",
+            'name': item.get('name') or symbol,
+            'code': symbol,
+            'volume': 0,
+            'change_1m': 'N/A',
+            'change_3m': 'N/A',
+            'per': 'N/A',
+            'pbr': 'N/A',
+            'dividend': 'N/A',
+            'upside': 'N/A',
+            'fair_value': 'N/A',
+            'current_price': current_price,
+            'rsi': 'N/A',
+            'risk_flags': [],
+            'interest_level': 'N/A',
+            'interest_score': 0.0,
+            'opinion': 'N/A',
+            'grades': {'profit': '보통', 'health': '보통', 'growth': '보통'},
+            'is_profitable': 'Pass (토스 보유종목)',
+            'purchase_price': average_price,
+            'my_return': f"{_safe_float(profit_loss.get('rate')) * 100:+.2f}%",
+            'quantity': quantity,
+            'currency': currency,
+            'market_value': _safe_float(market_value.get('amount')),
+            'profit_loss': _safe_float(profit_loss.get('amount')),
+            'daily_profit_loss': _safe_float(daily_profit_loss.get('amount')),
+            'daily_return': _safe_float(daily_profit_loss.get('rate')) * 100,
+            'account_source': 'toss',
+        })
 
-    for line in lines:
-        line = line.strip()
-        if not line or line.startswith('#'):
-            continue
-        parts = [p.strip() for p in line.split(',')]
-        if not parts or not parts[0]:
-            continue
-        identifier = parts[0]
-        purchase_price = None
-        if len(parts) > 1:
-            try:
-                purchase_price = float(parts[1])
-            except:
-                pass
-        
-        def find_domestic_code(name_id):
-            clean_name = name_id.strip().replace(" ", "").lower()
-            
-            # 1. Try pykrx map
-            if name_to_code and clean_name in name_to_code:
-                return name_to_code[clean_name]
-                
-            # 2. Try static fallback map of major stocks
-            fallback_map = {
-                '삼성전자': '005930', 'sk하이닉스': '000660', 'lg에너지솔루션': '373220',
-                '삼성바이오로직스': '207940', '현대차': '005380', '기아': '000270',
-                '셀트리온': '068270', 'kb금융': '105560', '신한지주': '055550',
-                '포스코홀딩스': '005490', 'posco홀딩스': '005490', 'naver': '035420',
-                '네이버': '035420', '카카오': '035720', '삼성sdi': '006400',
-                'lg화학': '051910', '삼성물산': '028260', '현대모비스': '012330',
-                '하나금융지주': '086790', '메리츠금융지주': '138040', '포스코퓨처엠': '003670',
-                'lg전자': '066570', '두산에너빌리티': '034020', '크래프톤': '259960',
-                '동원산업': '006040', 'hmm': '011200', '대한항공': '003490',
-                '한국전력': '015760', 'sk이노베이션': '096770', '카카오페이': '377300',
-                '카카오뱅크': '323410', '하이브': '352820',
-                'kodex미국s&p500': '379800', 'tiger미국s&p500': '360750',
-                'tiger미국나스닥100': '133690', 'kodex200': '069500'
-            }
-            if clean_name in fallback_map:
-                return fallback_map[clean_name]
-                
-            # 3. Try Naver Autocomplete API
-            try:
-                import urllib.parse
-                url = f"https://ac.finance.naver.com/ac?q={urllib.parse.quote(name_id, encoding='euc-kr')}&q_enc=euc-kr&st=1&frm=stock&r_format=json&r_enc=euc-kr&r_unicode=1&t_koreng=1"
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                }
-                r = requests.get(url, headers=headers, verify=False, timeout=3)
-                data = r.json()
-                if data and 'items' in data and data['items'] and data['items'][0]:
-                    for item in data['items'][0]:
-                        item_name = item[0][0].strip().replace(" ", "").lower()
-                        if item_name == clean_name:
-                            return item[0][1]
-            except:
-                pass
-
-            # 4. Try Naver Search Page scraping as a last resort
-            try:
-                import urllib.parse
-                url = f"https://search.naver.com/search.naver?query={urllib.parse.quote(name_id)}+주식"
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                }
-                r = requests.get(url, headers=headers, verify=False, timeout=3)
-                soup = BeautifulSoup(r.text, 'html.parser')
-                for a in soup.find_all('a', href=True):
-                    href = a['href']
-                    match = re.search(r'code=(\d{6})', href)
-                    if match:
-                        return match.group(1)
-                    match2 = re.search(r'domestic/stock/(\d{6})', href)
-                    if match2:
-                        return match2.group(1)
-            except:
-                pass
-
-            return None
-
-        def find_us_ticker_by_korean_name(name_id):
-            clean_name = name_id.strip().replace(" ", "").lower()
-            
-            # 1. Static map of extremely common US stocks
-            static_map = {
-                '마이크로소프트': 'MSFT', '테슬라': 'TSLA', '애플': 'AAPL',
-                '엔비디아': 'NVDA', '구글': 'GOOGL', '알파벳': 'GOOGL',
-                '아마존': 'AMZN', '메타': 'META', '페이스북': 'META',
-                '넷플릭스': 'NFLX', '마이크론': 'MU', '스타벅스': 'SBUX',
-                '코카콜라': 'KO', '펩시': 'PEP', '디즈니': 'DIS',
-                '나이키': 'NKE', '인텔': 'INTC', 'amd': 'AMD',
-                '브로드컴': 'AVGO', '퀄컴': 'QCOM', 'asml': 'ASML'
-            }
-            if clean_name in static_map:
-                return static_map[clean_name]
-            for k, v in static_map.items():
-                if k in clean_name:
-                    return v
-                
-            # 2. Try Naver Search page scraping for US stock ticker
-            try:
-                import urllib.parse
-                url = f"https://search.naver.com/search.naver?query={urllib.parse.quote(name_id)}+주식"
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                }
-                r = requests.get(url, headers=headers, verify=False, timeout=3)
-                soup = BeautifulSoup(r.text, 'html.parser')
-                for a in soup.find_all('a', href=True):
-                    href = a['href']
-                    match = re.search(r'worldstock/stock/([A-Z]+)', href)
-                    if match:
-                        return match.group(1)
-                    match2 = re.search(r'symbol=\w+@([A-Z]+)', href)
-                    if match2:
-                        return match2.group(1)
-            except:
-                pass
-            return None
-
-        is_us = False
-        code = None
-        name = identifier
-        
-        # 국내 종목 판별: 6자리 숫자이거나 한글을 포함하는 경우
-        if re.match(r'^\d{6}$', identifier):
-            code = identifier
-            is_us = False
-            try:
-                name = stock.get_market_ticker_name(code) or identifier
-            except:
-                name = identifier
-        elif re.search(r'[ㄱ-ㅎㅏ-ㅣ가-힣]', identifier):
-            is_us = False
-            code = find_domestic_code(identifier)
-            if code:
-                try:
-                    name = stock.get_market_ticker_name(code) or identifier
-                except:
-                    name = identifier
-            else:
-                # 국내 매칭 실패 시 미국 주식 한국어명인지 확인
-                us_ticker = find_us_ticker_by_korean_name(identifier)
-                if us_ticker:
-                    is_us = True
-                    identifier = us_ticker
-                    name = identifier
-        else:
-            # 영어 식별자. 먼저 국내 시장에서 종목명 일치 여부 확인 후 없으면 미국 주식으로 판별
-            code = find_domestic_code(identifier)
-            if code:
-                try:
-                    name = stock.get_market_ticker_name(code) or identifier
-                except:
-                    name = identifier
-                is_us = False
-            else:
-                is_us = True
-        
-        if not is_us and not code:
-            print(f"⚠️ 국내 종목 코드/이름 매칭 실패: {identifier}")
-            continue
-
-        if is_us:
-            # 미국 주식 상세 분석
-            ticker_str = identifier.upper()
-            try:
-                ticker = yf.Ticker(ticker_str)
-                info = ticker.info
-                if not info or ('regularMarketPrice' not in info and 'currentPrice' not in info):
-                    continue
-                curr_p = info.get('regularMarketPrice') or info.get('currentPrice') or 0
-                if curr_p == 0:
-                    hist = ticker.history(period="1d")
-                    if not hist.empty:
-                        curr_p = hist['Close'].iloc[-1]
-                if curr_p == 0:
-                    continue
-                
-                name = info.get('shortName', ticker_str)
-                volume = info.get('volume', 0)
-                pe = info.get('trailingPE', 0) or info.get('forwardPE', 0) or 0
-                pb = info.get('priceToBook', 0) or 0
-                
-                month_return_str = get_1m_return(ticker_str, is_us=True)
-                quarter_return_str = get_3m_return(ticker_str, is_us=True)
-                month_return = _safe_float(month_return_str)
-                quarter_return = _safe_float(quarter_return_str)
-                
-                target_p = info.get('targetMeanPrice', "N/A")
-                upside_val = ((target_p / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
-                
-                rsi = 0
-                risk_flags = []
-                try:
-                    hist_3m = ticker.history(period="3mo")
-                    if not hist_3m.empty:
-                        rsi = calculate_rsi(hist_3m['Close'])
-                        ma20 = hist_3m['Close'].rolling(window=20).mean().iloc[-1] if len(hist_3m) >= 20 else 0
-                        high_52 = hist_3m['Close'].max()
-                        risk_flags = build_risk_flags(rsi, month_return, upside_val, curr_p, high_52, ma20)
-                except:
-                    pass
-                
-                grades = {"profit": "보통", "health": "보통", "growth": "보통"}
-                roe = info.get('returnOnEquity', 0)
-                if roe > 0.15: grades["profit"] = "최고"
-                elif roe > 0.10: grades["profit"] = "우수"
-                if _safe_float(info.get('debtToEquity', 150)) < 60: grades["health"] = "최고"
-                elif _safe_float(info.get('debtToEquity', 150)) < 100: grades["health"] = "우수"
-                
-                my_return = "N/A"
-                if purchase_price and curr_p > 0:
-                    ret = (curr_p / purchase_price - 1) * 100
-                    my_return = f"{ret:+.2f}%"
-                    
-                yang_results.append({
-                    'category': 'yang_stock',
-                    'theme': '양 종목 (미국)',
-                    'name': name,
-                    'code': ticker_str,
-                    'volume': volume,
-                    'change_1m': f"{month_return:+.2f}%" if month_return != 0 else "0.00%",
-                    'change_3m': f"{quarter_return:+.2f}%" if quarter_return != 0 else "0.00%",
-                    'per': f"{pe:.2f}" if pe else "N/A",
-                    'pbr': f"{pb:.2f}" if pb else "N/A",
-                    'dividend': f"{info.get('dividendYield', 0)*100:.2f}%" if info.get('dividendYield') else "N/A",
-                    'upside': f"{upside_val:+.2f}%" if target_p != "N/A" else "N/A",
-                    'fair_value': str(target_p),
-                    'current_price': curr_p,
-                    'rsi': rsi if rsi else "N/A",
-                    'risk_flags': risk_flags,
-                    'interest_level': "N/A",
-                    'interest_score': 0.0,
-                    'opinion': info.get('recommendationKey', "N/A").replace('_', ' ').title(),
-                    'grades': grades,
-                    'is_profitable': "Pass (양 종목)",
-                    'purchase_price': purchase_price if purchase_price else "N/A",
-                    'my_return': my_return
-                })
-            except Exception as e:
-                print(f"미국 종목 {ticker_str} 분석 실패: {e}")
-        
-        else:
-            # 국내 주식 상세 분석
-            try:
-                adv = get_naver_financials_advanced(code)
-                if not adv:
-                    continue
-                curr_p = adv['current_price']
-                if curr_p == 0 and not cap_df.empty and code in cap_df.index:
-                    curr_p = float(cap_df.loc[code, '종가'])
-                    
-                per, pbr, div = 999, 999, "N/A"
-                volume = 0
-                if not fund_df.empty and code in fund_df.index:
-                    row_f = fund_df.loc[code]
-                    per, pbr = float(row_f['PER']), float(row_f['PBR'])
-                    div = f"{float(row_f['DIV']):.2f}%" if row_f['DIV'] != 0 else "N/A"
-                else:
-                    per = float(adv['per']) if adv['per'] != "N/A" else 999
-                    pbr = float(adv['pbr']) if adv['pbr'] != "N/A" else 999
-                    div = adv['dividend']
-                    
-                if not cap_df.empty and code in cap_df.index:
-                    volume = int(cap_df.loc[code, '거래량'])
-                
-                month_return_str = get_1m_return(code, is_us=False)
-                quarter_return_str = get_3m_return(code, is_us=False)
-                month_return = _safe_float(month_return_str)
-                quarter_return = _safe_float(quarter_return_str)
-                
-                target_p = adv['target_price']
-                upside_val = ((float(target_p) / curr_p) - 1) * 100 if target_p != "N/A" and curr_p > 0 else 0
-                
-                rsi, risk_flags = get_domestic_risk_snapshot(code, curr_p, upside_val)
-                
-                my_return = "N/A"
-                if purchase_price and curr_p > 0:
-                    ret = (curr_p / purchase_price - 1) * 100
-                    my_return = f"{ret:+.2f}%"
-                    
-                yang_results.append({
-                    'category': 'yang_stock',
-                    'theme': '양 종목 (국내)',
-                    'name': name,
-                    'code': code,
-                    'volume': volume,
-                    'change_1m': f"{month_return:+.2f}%" if month_return != 0 else "0.00%",
-                    'change_3m': f"{quarter_return:+.2f}%" if quarter_return != 0 else "0.00%",
-                    'per': f"{per:.2f}" if per != 999 else "N/A",
-                    'pbr': f"{pbr:.2f}" if pbr != 999 else "N/A",
-                    'dividend': div,
-                    'upside': f"{upside_val:+.2f}%" if target_p != "N/A" else "N/A",
-                    'fair_value': str(target_p),
-                    'current_price': curr_p,
-                    'rsi': rsi if rsi else "N/A",
-                    'risk_flags': risk_flags,
-                    'interest_level': "N/A",
-                    'interest_score': 0.0,
-                    'opinion': adv.get('opinion', 'N/A'),
-                    'grades': adv['grades'],
-                    'is_profitable': "Pass (양 종목)",
-                    'purchase_price': purchase_price if purchase_price else "N/A",
-                    'my_return': my_return
-                })
-            except Exception as e:
-                print(f"국내 종목 {code} ({name}) 분석 실패: {e}")
-                
-    return yang_results
+    print(f"토스증권 보유종목 {len(results)}개 조회 성공")
+    return results
 
 # 12. 전체 수집 파이프라인 실행
 # 국내 테마, 국내 성장 저평가, 미국 성장 저평가 결과를 합쳐 data.json으로 저장한다.
@@ -1671,20 +1407,21 @@ def main():
     
     print("시장 투자지표 수집 중...")
     fund_df, cap_df = pd.DataFrame(), pd.DataFrame()
-    for i in range(1, 10): # 최근 10일간의 데이터를 뒤져서 가장 최신 영업일 데이터 찾기
-        search_date = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
-        try:
-            # KRX API는 가끔 차단되므로 딜레이 부여
-            time.sleep(0.5)
-            temp_fund = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
-            temp_cap = stock.get_market_cap_by_ticker(search_date, market="ALL")
-            if not temp_fund.empty and not temp_cap.empty:
-                fund_df, cap_df = temp_fund, temp_cap
-                print(f"[{search_date}] 데이터 수집 성공")
-                break
-        except Exception as e:
-            print(f"[{search_date}] 데이터 수집 시도 실패: {e}")
-            continue
+    if os.getenv('KRX_ID') and os.getenv('KRX_PW'):
+        for i in range(1, 10): # 최근 10일간의 데이터를 뒤져서 가장 최신 영업일 데이터 찾기
+            search_date = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
+            try:
+                time.sleep(0.5)
+                temp_fund = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
+                temp_cap = stock.get_market_cap_by_ticker(search_date, market="ALL")
+                if not temp_fund.empty and not temp_cap.empty:
+                    fund_df, cap_df = temp_fund, temp_cap
+                    print(f"[{search_date}] 데이터 수집 성공")
+                    break
+            except Exception as e:
+                print(f"[{search_date}] 데이터 수집 시도 실패: {e}")
+    else:
+        print("KRX 로그인 정보가 없어 네이버 재무 + 토스 일봉 fallback을 사용합니다.")
 
     results.extend(get_top_theme_stocks(top_themes, cap_df))
     results.extend(find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus))
@@ -1714,9 +1451,8 @@ def main():
         # 러셀 1000에서 성장 테마와 일치하는 종목들을 찾기 위해 상위 700개를 우선 스캔 (확대)
         results.extend(scan_us_tickers(russell_tickers[:700], 'Russell 1000', leading_sectors, limit=30))
 
-    # 양 종목 분석 추가
-    print("\n--- [양 종목 분석 시작] ---")
-    results.extend(scan_yang_stocks(fund_df, cap_df))
+    print("\n--- [토스증권 보유종목 조회 시작] ---")
+    results.extend(scan_toss_holdings())
     results.append(market_status_item)
 
     with open('data.json', 'w', encoding='utf-8') as f:
