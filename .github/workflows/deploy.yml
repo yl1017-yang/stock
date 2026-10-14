@@ -30,20 +30,30 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Analysis
+        if: github.event_name != 'push'
         env:
+          TZ: Asia/Seoul
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
+          TOSS_CLIENT_ID: ${{ secrets.TOSS_CLIENT_ID }}
+          TOSS_CLIENT_SECRET: ${{ secrets.TOSS_CLIENT_SECRET }}
+          TOSS_ACCOUNT_SEQ: ${{ secrets.TOSS_ACCOUNT_SEQ }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
-          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
         run: python main.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Prepare public files
+        run: |
+          mkdir -p public
+          cp index.html style.css script.js data.json public/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # index.html이 있는 경로 업로드
-          path: '.'
+          path: 'public'
 
       - name: Deploy to GitHub Pages
         id: deployment

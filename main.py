@@ -14,8 +14,8 @@ import io
 import ssl
 import time
 import sys
-from kakao_api import send_kakao_message
 from toss_api import TossAPIError, get_daily_candles, get_holdings
+from data_validation import validate_snapshot
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -768,73 +768,6 @@ def get_market_status_item():
         'market_status': snapshots,
         'time': datetime.now().strftime('%Y-%m-%d %H:%M')
     }
-# 카카오 알림 길이 제한을 맞추기 위해 긴 종목명을 짧게 줄인다.
-def _compact_name(name, max_len=10):
-    text = str(name or "N/A").strip()
-    return text if len(text) <= max_len else text[:max_len - 1] + "…"
-
-# 알림 TOP10은 단기 회복 강도를 보기 위해 1개월 수익률 기준으로 정렬한다.
-def _sort_by_1m_return(items):
-    return sorted(items, key=lambda item: _safe_float(item.get('change_1m')), reverse=True)
-
-# 카카오 알림 한 줄에 들어갈 종목명, 1개월 수익률, 상승여력, 위험 플래그를 조합한다.
-def _format_alert_line(item, index):
-    name = _compact_name(item.get('name'))
-    change_1m = item.get('change_1m') or "N/A"
-    upside = item.get('upside') if item.get('upside') != "N/A" else ""
-    risk_flags = item.get('risk_flags') or []
-    risk_text = f" / {','.join(risk_flags[:2])}" if risk_flags else ""
-    suffix = f" / {upside}" if upside else ""
-    return f"{index}. {name} {change_1m}{suffix}{risk_text}"
-
-# 카카오 메시지 길이 제한을 넘지 않도록 섹션별 알림 문구를 여러 메시지로 나눈다.
-def _split_kakao_text(title, lines, max_len=180):
-    messages = []
-    current = title
-    for line in lines:
-        candidate = f"{current}\n{line}"
-        if len(candidate) > max_len and current != title:
-            messages.append(current)
-            current = f"{title}\n{line}"
-        else:
-            current = candidate
-    if current != title:
-        messages.append(current)
-    return messages
-
-# S&P500/나스닥/Russell 스캔 결과에서 같은 티커가 중복 알림되지 않도록 제거한다.
-def _unique_by_code(items):
-    seen = set()
-    unique_items = []
-    for item in items:
-        key = item.get('code') or item.get('name')
-        if key in seen:
-            continue
-        seen.add(key)
-        unique_items.append(item)
-    return unique_items
-
-# 최종 결과를 국내/미국 테마와 저평가 TOP10 알림 메시지로 변환한다.
-def build_kakao_alert_messages(results):
-    us_value_items = _unique_by_code([
-        item for item in results
-        if item.get('category') in ('us_sp', 'us_ndq', 'us_rsl')
-    ])
-
-    sections = [
-        ("국내 테마 TOP10", _sort_by_1m_return([item for item in results if item.get('category') == 'domestic_theme'])[:10]),
-        ("미국 테마 TOP10", _sort_by_1m_return([item for item in results if item.get('category') == 'us_theme'])[:10]),
-        ("국내 저평가 TOP10", _sort_by_1m_return([item for item in results if item.get('category') == 'domestic_value'])[:10]),
-        ("미국 저평가 TOP10", _sort_by_1m_return(us_value_items)[:10]),
-    ]
-
-    messages = []
-    for title, items in sections:
-        if not items:
-            continue
-        lines = [_format_alert_line(item, index) for index, item in enumerate(items, start=1)]
-        messages.extend(_split_kakao_text(title, lines))
-    return messages
 
 # 8. 국내 성장 저평가주 탐색
 # 핫한 성장 테마는 가산점으로 사용하되, KRX 전체에서도 숨은 저평가 후보를 함께 찾는다.
@@ -1182,12 +1115,17 @@ def get_us_hot_theme_stocks(theme_limit=6, stock_limit=5):
 # S&P500, NASDAQ100, Russell1000 후보를 같은 GARP 기준으로 평가한다.
 def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
     results = []
+    fetched_count = 0
     print(f"{index_name} 성장 저평가 스캔 중...")
     for t in tickers:
         ticker_str = t.replace('.', '-')
         try:
             ticker = yf.Ticker(ticker_str)
             info = ticker.info
+            if not info or not info.get('currentPrice'):
+                print(f'{index_name} {ticker_str}: 가격/재무 응답 누락')
+                continue
+            fetched_count += 1
             
             # 섹터 정보를 테마로 활용
             sector = info.get('sector', index_name)
@@ -1312,7 +1250,12 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M')
             })
             if len(results) >= limit: break
-        except: continue
+        except Exception as error:
+            print(f'{index_name} {ticker_str} 분석 실패: {error}')
+            continue
+    print(f'{index_name}: 후보 {len(tickers)}개, 응답 성공 {fetched_count}개, 조건 충족 {len(results)}개')
+    if tickers and fetched_count == 0:
+        raise RuntimeError(f'{index_name}: 모든 종목 조회 실패. 기존 데이터를 유지합니다.')
     return results
 
 # 11. Russell 1000 구성 종목 수집
@@ -1330,6 +1273,24 @@ def get_russell1000_tickers():
     except Exception as e:
         print(f"Russell 1000 수집 오류: {e}")
     return []
+
+
+def get_index_tickers(url, index_name):
+    """표 번호 대신 종목 코드 컬럼으로 구성종목 표를 찾는다."""
+    try:
+        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=20)
+        response.raise_for_status()
+        for table in pd.read_html(io.StringIO(response.text)):
+            for column in table.columns:
+                labels = column if isinstance(column, tuple) else (column,)
+                if any(re.sub(r'\[.*?\]', '', str(label)).strip().lower()
+                       in ('symbol', 'ticker') for label in labels):
+                    tickers = table[column].dropna().astype(str)
+                    return list(dict.fromkeys(tickers.str.replace('.', '-', regex=False)))
+        raise ValueError('Symbol/Ticker 컬럼이 없습니다.')
+    except Exception as error:
+        print(f'{index_name} 구성종목 수집 실패: {error}')
+        return []
 
 # 11.5 토스증권 실제 보유종목 조회
 def scan_toss_holdings():
@@ -1396,6 +1357,10 @@ def scan_toss_holdings():
 # 12. 전체 수집 파이프라인 실행
 # 국내 테마, 국내 성장 저평가, 미국 성장 저평가 결과를 합쳐 data.json으로 저장한다.
 def main():
+    import json
+    from pathlib import Path
+    snapshot_path = Path('data.json')
+    previous = json.loads(snapshot_path.read_text(encoding='utf-8')) if snapshot_path.exists() else []
     # DART 키는 설정만 한다. 전체 기업 목록 선로딩은 느리고, 현재 로직에서는 사용하지 않는다.
     dart_api_key = os.getenv('DART_API_KEY')
     if dart_api_key:
@@ -1431,19 +1396,11 @@ def main():
 
     # 미국 지수별 구성 종목을 수집한 뒤 동일한 성장 저평가 스코어로 평가한다.
     leading_sectors = get_us_leading_sectors()
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        res = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', headers=headers, verify=False)
-        sp500_tickers = pd.read_html(io.StringIO(res.text))[0]['Symbol'].tolist()
-    except: sp500_tickers = []
-    
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        res = requests.get('https://en.wikipedia.org/wiki/Nasdaq-100#Components', headers=headers, verify=False)
-        ndx_tickers = pd.read_html(io.StringIO(res.text))[5]['Ticker'].tolist() # 인덱스 5로 수정
-    except: ndx_tickers = []
-
-    russell_tickers = get_russell1000_tickers()
+    sp500_tickers = get_index_tickers('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', 'S&P 500')
+    ndx_tickers = get_index_tickers('https://en.wikipedia.org/wiki/Nasdaq-100', 'NASDAQ 100')
+    russell_tickers = get_index_tickers('https://en.wikipedia.org/wiki/Russell_1000_Index', 'Russell 1000')
+    if not all((sp500_tickers, ndx_tickers, russell_tickers)):
+        raise RuntimeError('미국 지수 구성종목 수집 실패: 기존 data.json을 유지합니다.')
 
     if sp500_tickers: results.extend(scan_us_tickers(sp500_tickers, 'S&P 500', leading_sectors))
     if ndx_tickers: results.extend(scan_us_tickers(ndx_tickers, 'NASDAQ 100', leading_sectors))
@@ -1455,7 +1412,9 @@ def main():
     results.extend(scan_toss_holdings())
     results.append(market_status_item)
 
-    with open('data.json', 'w', encoding='utf-8') as f:
+    validate_snapshot(results, previous)
+    temporary_path = snapshot_path.with_suffix('.json.tmp')
+    with temporary_path.open('w', encoding='utf-8') as f:
         import json
         # pandas/numpy 숫자 타입은 기본 JSON 직렬화가 안 되므로 item()으로 일반 숫자로 바꾼다.
         json.dump(
@@ -1465,13 +1424,9 @@ def main():
             indent=2,
             default=lambda value: value.item() if hasattr(value, "item") else str(value)
         )
+    temporary_path.replace(snapshot_path)
     stock_count = sum(1 for item in results if item.get('category') != 'market_status')
     print(f"\n✅ 분석 완료! {stock_count}개 종목 저장됨.")
-
-    alert_messages = build_kakao_alert_messages(results)
-    for message in alert_messages:
-        send_kakao_message(message)
-        time.sleep(0.3)
 
 if __name__ == "__main__":
     main()
