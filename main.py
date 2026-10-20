@@ -1262,35 +1262,35 @@ def scan_us_tickers(tickers, index_name, leading_sectors, limit=30):
 # Wikipedia 표 구조가 바뀔 수 있으므로 Symbol 컬럼이 있는 테이블을 찾아 사용한다.
 def get_russell1000_tickers():
     print("Russell 1000 종목 리스트 수집 중...")
-    try:
-        url = 'https://en.wikipedia.org/wiki/Russell_1000_Index#Components'
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-        res = requests.get(url, headers=headers, verify=False, timeout=10)
-        tables = pd.read_html(io.StringIO(res.text))
-        for table in tables:
-            if 'Symbol' in table.columns:
-                return [str(t).replace('.', '-') for t in table['Symbol'].tolist()]
-    except Exception as e:
-        print(f"Russell 1000 수집 오류: {e}")
-    return []
+    return get_index_tickers(
+        (
+            'https://en.wikipedia.org/wiki/List_of_Russell_1000_companies',
+            'https://en.wikipedia.org/wiki/Russell_1000_Index',
+        ),
+        'Russell 1000',
+    )
 
 
 def get_index_tickers(url, index_name):
     """표 번호 대신 종목 코드 컬럼으로 구성종목 표를 찾는다."""
-    try:
-        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=20)
-        response.raise_for_status()
-        for table in pd.read_html(io.StringIO(response.text)):
-            for column in table.columns:
-                labels = column if isinstance(column, tuple) else (column,)
-                if any(re.sub(r'\[.*?\]', '', str(label)).strip().lower()
-                       in ('symbol', 'ticker') for label in labels):
-                    tickers = table[column].dropna().astype(str)
-                    return list(dict.fromkeys(tickers.str.replace('.', '-', regex=False)))
-        raise ValueError('Symbol/Ticker 컬럼이 없습니다.')
-    except Exception as error:
-        print(f'{index_name} 구성종목 수집 실패: {error}')
-        return []
+    urls = (url,) if isinstance(url, str) else tuple(url)
+    last_error = None
+    for target_url in urls:
+        try:
+            response = requests.get(target_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=20)
+            response.raise_for_status()
+            for table in pd.read_html(io.StringIO(response.text)):
+                for column in table.columns:
+                    labels = column if isinstance(column, tuple) else (column,)
+                    if any(re.sub(r'\[.*?\]', '', str(label)).strip().lower()
+                           in ('symbol', 'ticker') for label in labels):
+                        tickers = table[column].dropna().astype(str)
+                        return list(dict.fromkeys(tickers.str.replace('.', '-', regex=False)))
+            raise ValueError('Symbol/Ticker 컬럼이 없습니다.')
+        except Exception as error:
+            last_error = error
+    print(f'{index_name} 구성종목 수집 실패: {last_error}')
+    return []
 
 # 11.5 토스증권 실제 보유종목 조회
 def scan_toss_holdings():
@@ -1397,8 +1397,20 @@ def main():
     # 미국 지수별 구성 종목을 수집한 뒤 동일한 성장 저평가 스코어로 평가한다.
     leading_sectors = get_us_leading_sectors()
     sp500_tickers = get_index_tickers('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', 'S&P 500')
-    ndx_tickers = get_index_tickers('https://en.wikipedia.org/wiki/Nasdaq-100', 'NASDAQ 100')
-    russell_tickers = get_index_tickers('https://en.wikipedia.org/wiki/Russell_1000_Index', 'Russell 1000')
+    ndx_tickers = get_index_tickers(
+        (
+            'https://en.wikipedia.org/wiki/List_of_NASDAQ-100_companies',
+            'https://en.wikipedia.org/wiki/Nasdaq-100',
+        ),
+        'NASDAQ 100',
+    )
+    russell_tickers = get_index_tickers(
+        (
+            'https://en.wikipedia.org/wiki/List_of_Russell_1000_companies',
+            'https://en.wikipedia.org/wiki/Russell_1000_Index',
+        ),
+        'Russell 1000',
+    )
     if not all((sp500_tickers, ndx_tickers, russell_tickers)):
         raise RuntimeError('미국 지수 구성종목 수집 실패: 기존 data.json을 유지합니다.')
 
