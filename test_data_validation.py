@@ -15,8 +15,13 @@ class SnapshotValidationTests(unittest.TestCase):
     def test_optional_missing_metrics_are_allowed(self):
         validate_snapshot([
             {'category': 'domestic_theme', 'change_1m': '+2%', 'per': 'N/A'},
-            {'category': 'yang_stock', 'change_1m': 'N/A'},
-        ], [{'category': 'yang_stock'}])
+            {'category': 'us_sp', 'change_1m': 'N/A'},
+        ], [{'category': 'us_sp'}])
+
+    def test_removed_holdings_tab_does_not_block_update(self):
+        validate_snapshot([{'category': 'us_sp'}], [
+            {'category': 'us_sp'}, {'category': 'yang_stock'},
+        ])
 
     def test_empty_snapshot_is_rejected(self):
         with self.assertRaises(ValueError):

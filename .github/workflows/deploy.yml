@@ -35,11 +35,12 @@ jobs:
           TZ: Asia/Seoul
           KRX_ID: ${{ secrets.KRX_ID }}
           KRX_PW: ${{ secrets.KRX_PW }}
-          TOSS_CLIENT_ID: ${{ secrets.TOSS_CLIENT_ID }}
-          TOSS_CLIENT_SECRET: ${{ secrets.TOSS_CLIENT_SECRET }}
-          TOSS_ACCOUNT_SEQ: ${{ secrets.TOSS_ACCOUNT_SEQ }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-        run: python main.py
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
+          ENABLE_ALPHA_NEWS_SCORE: ${{ secrets.ENABLE_ALPHA_NEWS_SCORE || 'true' }}
+        run: python -u main.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

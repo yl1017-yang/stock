@@ -4,17 +4,16 @@ import re
 import pandas as pd
 import os
 import time
-from pykrx import stock
 import dart_fss as dart
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from pathlib import Path
 import yfinance as yf
 import urllib3
 import io
 import ssl
 import time
 import sys
-from toss_api import TossAPIError, get_daily_candles, get_holdings
 from data_validation import validate_snapshot
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -56,7 +55,10 @@ try:
 except Exception as e:
     print(f"curl_cffi SSL 몽키패치 적용 실패: {e}")
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().with_name(".env"))
+
+# pykrx는 import 시 인증 환경변수를 읽으므로 .env를 먼저 로드한다.
+from pykrx import stock
 
 # =================================================================
 # [설정] 미래 성장 테마 탐지 기준
@@ -492,35 +494,23 @@ DOMESTIC_OHLCV_CACHE = {}
 
 
 def get_domestic_ohlcv(code):
-    """국내 일봉을 KRX에서 조회하고, 실패하면 토스증권 일봉으로 대체한다."""
+    """KRX 수정주가 일봉을 조회하고 종목별로 캐시한다."""
     if code in DOMESTIC_OHLCV_CACHE:
         return DOMESTIC_OHLCV_CACHE[code].copy()
+    if not os.getenv('KRX_ID') or not os.getenv('KRX_PW'):
+        raise RuntimeError('KRX_ID와 KRX_PW를 .env 또는 GitHub Actions Secrets에 설정하세요.')
 
-    df = pd.DataFrame()
-    if os.getenv('KRX_ID') and os.getenv('KRX_PW'):
-        try:
-            end_date = datetime.now().strftime("%Y%m%d")
-            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
-            df = stock.get_market_ohlcv(start_date, end_date, code)
-        except Exception as e:
-            print(f"KRX 일봉 조회 실패 ({code}), 토스 fallback 사용: {e}")
-
-    if df.empty:
-        try:
-            candles = get_daily_candles(code, 200)
-            df = pd.DataFrame([
-                {
-                    '시가': _safe_float(item.get('openPrice')),
-                    '고가': _safe_float(item.get('highPrice')),
-                    '저가': _safe_float(item.get('lowPrice')),
-                    '종가': _safe_float(item.get('closePrice')),
-                    '거래량': _safe_float(item.get('volume')),
-                }
-                for item in candles
-            ])
-        except Exception as e:
-            print(f"토스 일봉 조회 실패 ({code}): {e}")
-            df = pd.DataFrame()
+    try:
+        end_date = datetime.now().strftime("%Y%m%d")
+        start_date = (datetime.now() - timedelta(days=365)).strftime("%Y%m%d")
+        df = stock.get_market_ohlcv(start_date, end_date, code, adjusted=True)
+        required = {'시가', '고가', '저가', '종가', '거래량'}
+        if df.empty or not required.issubset(df.columns):
+            raise ValueError('일봉 응답이 비어 있거나 필수 컬럼이 없습니다.')
+        df = df.sort_index()
+    except Exception as e:
+        print(f"KRX 일봉 조회 실패 ({code}): {type(e).__name__}")
+        return pd.DataFrame()
 
     DOMESTIC_OHLCV_CACHE[code] = df.copy()
     return df
@@ -1292,71 +1282,12 @@ def get_index_tickers(url, index_name):
     print(f'{index_name} 구성종목 수집 실패: {last_error}')
     return []
 
-# 11.5 토스증권 실제 보유종목 조회
-def scan_toss_holdings():
-    """토스증권 계좌의 실제 보유종목을 기존 대시보드 카드 구조로 변환한다."""
-    if not os.getenv('TOSS_CLIENT_ID') or not os.getenv('TOSS_CLIENT_SECRET'):
-        print("토스증권 API 키가 없어 계좌 보유종목 조회를 건너뜁니다.")
-        return []
-
-    try:
-        holdings = get_holdings()
-    except TossAPIError as e:
-        print(f"토스증권 보유종목 조회 실패: {e}")
-        return []
-    except requests.RequestException as e:
-        print(f"토스증권 네트워크 요청 실패: {e}")
-        return []
-
-    results = []
-    for item in holdings['items']:
-        symbol = item.get('symbol', '')
-        currency = item.get('currency', '')
-        quantity = _safe_float(item.get('quantity'))
-        average_price = _safe_float(item.get('averagePurchasePrice'))
-        current_price = _safe_float(item.get('lastPrice'))
-        market_value = item.get('marketValue') or {}
-        profit_loss = item.get('profitLoss') or {}
-        daily_profit_loss = item.get('dailyProfitLoss') or {}
-
-        results.append({
-            'category': 'yang_stock',
-            'theme': f"양 종목 (토스 {item.get('marketCountry', '')})",
-            'name': item.get('name') or symbol,
-            'code': symbol,
-            'volume': 0,
-            'change_1m': 'N/A',
-            'change_3m': 'N/A',
-            'per': 'N/A',
-            'pbr': 'N/A',
-            'dividend': 'N/A',
-            'upside': 'N/A',
-            'fair_value': 'N/A',
-            'current_price': current_price,
-            'rsi': 'N/A',
-            'risk_flags': [],
-            'interest_level': 'N/A',
-            'interest_score': 0.0,
-            'opinion': 'N/A',
-            'grades': {'profit': '보통', 'health': '보통', 'growth': '보통'},
-            'is_profitable': 'Pass (토스 보유종목)',
-            'purchase_price': average_price,
-            'my_return': f"{_safe_float(profit_loss.get('rate')) * 100:+.2f}%",
-            'quantity': quantity,
-            'currency': currency,
-            'market_value': _safe_float(market_value.get('amount')),
-            'profit_loss': _safe_float(profit_loss.get('amount')),
-            'daily_profit_loss': _safe_float(daily_profit_loss.get('amount')),
-            'daily_return': _safe_float(daily_profit_loss.get('rate')) * 100,
-            'account_source': 'toss',
-        })
-
-    print(f"토스증권 보유종목 {len(results)}개 조회 성공")
-    return results
-
 # 12. 전체 수집 파이프라인 실행
 # 국내 테마, 국내 성장 저평가, 미국 성장 저평가 결과를 합쳐 data.json으로 저장한다.
 def main():
+    if not os.getenv('KRX_ID') or not os.getenv('KRX_PW'):
+        raise RuntimeError('국내 일봉 수집에 필요한 KRX_ID와 KRX_PW를 설정하세요.')
+    DOMESTIC_OHLCV_CACHE.clear()
     import json
     from pathlib import Path
     snapshot_path = Path('data.json')
@@ -1386,7 +1317,7 @@ def main():
             except Exception as e:
                 print(f"[{search_date}] 데이터 수집 시도 실패: {e}")
     else:
-        print("KRX 로그인 정보가 없어 네이버 재무 + 토스 일봉 fallback을 사용합니다.")
+        print("KRX 로그인 정보가 없습니다.")
 
     results.extend(get_top_theme_stocks(top_themes, cap_df))
     results.extend(find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus))
@@ -1420,8 +1351,6 @@ def main():
         # 러셀 1000에서 성장 테마와 일치하는 종목들을 찾기 위해 상위 700개를 우선 스캔 (확대)
         results.extend(scan_us_tickers(russell_tickers[:700], 'Russell 1000', leading_sectors, limit=30))
 
-    print("\n--- [토스증권 보유종목 조회 시작] ---")
-    results.extend(scan_toss_holdings())
     results.append(market_status_item)
 
     validate_snapshot(results, previous)

@@ -4,14 +4,15 @@
 
 - `main`에 push하면 저장소의 `data.json`을 그대로 배포합니다.
 - 예약 실행(매일 한국시간 15:40) 또는 Actions 수동 실행에서는 새로 수집한 데이터를 배포합니다.
-- GitHub 저장소의 **Settings → Secrets and variables → Actions**에 `TOSS_CLIENT_ID`, `TOSS_CLIENT_SECRET`을 등록해야 국내 일봉 및 양 종목(토스 보유종목)을 조회할 수 있습니다. `TOSS_ACCOUNT_SEQ`는 계좌 선택용 선택 항목입니다.
-- KRX 조회를 사용한다면 `KRX_ID`, `KRX_PW`도 등록합니다. 로컬 `.env`는 GitHub Actions에 전달되지 않습니다.
+- 국내 일봉 및 KRX 지표 수집을 위해 `KRX_ID`, `KRX_PW`도 등록합니다. 로컬 `.env`는 GitHub Actions에 전달되지 않습니다.
 - 지수 구성종목 조회 실패, 기존 탭 전체 누락, 국내 종목의 1개월 수익률 전체 누락 시 데이터 교체와 배포를 중단합니다. Actions 로그에서 실패 원인을 확인하고 인증 설정을 수정한 뒤 다시 실행하세요.
 - 자동 수집 결과는 배포 산출물에만 반영되며 Git에 자동 커밋되지 않습니다. 로컬과 동일한 결과를 배포하려면 로컬에서 수집한 `data.json`을 커밋하고 push하세요.
-- 배포에는 `index.html`, `style.css`, `script.js`, `data.json`만 포함됩니다. `data.json`의 양 종목에는 실제 보유종목 및 수량 등의 정보가 포함되므로 공개 사이트 방문자도 읽을 수 있습니다.
-- 배당·PER·보유종목 수익률 등 개별 지표의 `N/A`는 원천 데이터가 없거나 해당 지표를 수집하지 않는 경우에도 표시됩니다.
+- 배포에는 `index.html`, `style.css`, `script.js`, `data.json`만 포함됩니다.
+- 배당·PER 등 개별 지표의 `N/A`는 원천 데이터가 없거나 해당 지표를 수집하지 않는 경우에도 표시됩니다.
 
 이 프로젝트는 네이버 금융의 실시간 테마 데이터를 수집하여 시각화하는 웹 대시보드입니다. Python(Flask)으로 데이터를 수집하고, JavaScript(Vanilla)로 프론트엔드를 구현하여 반응형 대시보드를 제공합니다.
+
+양 종목 메뉴와 토스 계좌 보유종목 조회는 제거했습니다. 국내 일봉은 KRX(pykrx)로 조회합니다. 토스 API 키는 사용하지 않습니다.
 
 ## 🚀 주요 기능
 

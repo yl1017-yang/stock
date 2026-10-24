@@ -5,7 +5,7 @@ def validate_snapshot(results, previous=()):
     if not isinstance(results, list) or not results:
         raise ValueError('수집 결과가 비어 있습니다.')
     categories = {row.get('category') for row in results}
-    expected = {row.get('category') for row in previous} - {None, 'market_status'}
+    expected = {row.get('category') for row in previous} - {None, 'market_status', 'yang_stock'}
     missing = expected - categories
     if missing:
         raise ValueError(f'기존 탭의 수집 결과가 사라졌습니다: {sorted(missing)}')
