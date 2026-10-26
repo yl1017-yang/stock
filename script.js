@@ -10,8 +10,10 @@ async function init() {
         document.getElementById('loading').style.display = 'none';
         
         if (allData.length > 0) {
-            const latestItem = allData.find(item => item.time);
-            document.getElementById('update-time-val').textContent = latestItem ? latestItem.time : '-';
+            const metadata = allData.find(item => item.category === 'collection_status');
+            const times = allData.map(item => item.time || '').filter(Boolean).sort();
+            document.getElementById('update-time-val').textContent = metadata?.attempted_at || times.at(-1) || '-';
+            renderCollectionStatus();
             renderMarketStatus();
             filterData('All'); // 초기 로딩 시 국내 테마 필터 즉시 적용
         }
@@ -20,6 +22,32 @@ async function init() {
         document.getElementById('loading').style.display = 'none';
         document.getElementById('error').style.display = 'block';
     }
+}
+
+function renderCollectionStatus() {
+    const container = document.getElementById('collection-status');
+    const metadata = allData.find(item => item.category === 'collection_status');
+    if (!container || !metadata?.tabs) return;
+    const labels = {
+        domestic_theme: '국내 테마', domestic_value: '국내 저평가',
+        us_theme: '미국 테마', us_sp: 'S&P500', us_ndq: '나스닥',
+        us_rsl: 'Russell 1000', market_status: '시장 상태'
+    };
+    container.replaceChildren();
+    for (const [category, status] of Object.entries(metadata.tabs)) {
+        const item = document.createElement('div');
+        item.className = status.state === 'ok' ? 'collection-ok' : 'collection-warning';
+        const state = status.state === 'ok' ? '갱신 완료'
+            : status.state === 'stale' ? '수집 실패 · 기존 데이터 표시' : '수집 실패 · 데이터 없음';
+        item.textContent = `${labels[category] || category}: ${state} | 마지막 갱신: ${status.last_success || '없음'}`;
+        if (status.state !== 'ok') {
+            const detail = document.createElement('small');
+            detail.textContent = `수집 시도: ${status.attempted_at || '-'} · ${status.error || '원인 미확인'}`;
+            item.appendChild(detail);
+        }
+        container.appendChild(item);
+    }
+    container.hidden = false;
 }
 
 

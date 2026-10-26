@@ -14,7 +14,7 @@ import io
 import ssl
 import time
 import sys
-from data_validation import validate_snapshot
+from data_validation import collect_tab
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -886,7 +886,8 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                 'opinion': adv['opinion'], 'grades': adv['grades'], 'is_profitable': "Pass (성장 저평가)",
                 'time': datetime.now().strftime('%Y-%m-%d %H:%M')
             }, score, upside_val
-        except Exception:
+        except Exception as error:
+            print(f'국내 저평가 분석 실패 ({code}): {type(error).__name__}: {error}')
             return None
 
     print("성장 테마 기반 저평가 후보 분석 시작...")
@@ -912,7 +913,8 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                 
                 if len(results) >= 30: break
             if len(results) >= 30: break
-        except: continue
+        except Exception as error:
+            print(f'국내 저평가 테마 분석 실패: {type(error).__name__}: {error}')
 
     if len(results) < 30 and has_krx_data:
         print("KRX 전체 기반 숨은 저평가 후보 분석 시작...")
@@ -938,6 +940,7 @@ def find_undervalued_turnaround_stocks(fund_df, cap_df, growth_themes):
                     break
         except Exception as e:
             print(f"숨은 저평가 후보 분석 실패: {e}")
+    print(f'국내 성장 저평가 조건 충족: {len(results)}개')
     return results
 
 # 9. 미국 주도 섹터 계산
@@ -1285,75 +1288,70 @@ def get_index_tickers(url, index_name):
 # 12. 전체 수집 파이프라인 실행
 # 국내 테마, 국내 성장 저평가, 미국 성장 저평가 결과를 합쳐 data.json으로 저장한다.
 def main():
-    if not os.getenv('KRX_ID') or not os.getenv('KRX_PW'):
-        raise RuntimeError('국내 일봉 수집에 필요한 KRX_ID와 KRX_PW를 설정하세요.')
     DOMESTIC_OHLCV_CACHE.clear()
     import json
-    from pathlib import Path
-    snapshot_path = Path('data.json')
+    snapshot_path = Path(__file__).resolve().with_name('data.json')
     previous = json.loads(snapshot_path.read_text(encoding='utf-8')) if snapshot_path.exists() else []
-    # DART 키는 설정만 한다. 전체 기업 목록 선로딩은 느리고, 현재 로직에서는 사용하지 않는다.
-    dart_api_key = os.getenv('DART_API_KEY')
-    if dart_api_key:
-        dart.set_api_key(api_key=dart_api_key)
+    attempted_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    results, statuses = [], {}
 
-    top_themes, growth_focus = get_automated_growth_themes()
-    results = []
-    market_status_item = get_market_status_item()
-    
-    print("시장 투자지표 수집 중...")
-    fund_df, cap_df = pd.DataFrame(), pd.DataFrame()
-    if os.getenv('KRX_ID') and os.getenv('KRX_PW'):
-        for i in range(1, 10): # 최근 10일간의 데이터를 뒤져서 가장 최신 영업일 데이터 찾기
-            search_date = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
-            try:
-                time.sleep(0.5)
-                temp_fund = stock.get_market_fundamental_by_ticker(search_date, market="ALL")
-                temp_cap = stock.get_market_cap_by_ticker(search_date, market="ALL")
-                if not temp_fund.empty and not temp_cap.empty:
-                    fund_df, cap_df = temp_fund, temp_cap
-                    print(f"[{search_date}] 데이터 수집 성공")
-                    break
-            except Exception as e:
-                print(f"[{search_date}] 데이터 수집 시도 실패: {e}")
-    else:
-        print("KRX 로그인 정보가 없습니다.")
+    def refresh(category, collector):
+        rows, status = collect_tab(category, collector, previous, attempted_at)
+        results.extend(rows)
+        statuses[category] = status
 
-    results.extend(get_top_theme_stocks(top_themes, cap_df))
-    results.extend(find_undervalued_turnaround_stocks(fund_df, cap_df, growth_focus))
+    domestic_context = {}
 
-    # 미국 핫 테마는 지수 저평가와 별도로 최근 강한 테마 바스켓에서 생성한다.
-    results.extend(get_us_hot_theme_stocks())
+    def domestic(category):
+        if not os.getenv('KRX_ID') or not os.getenv('KRX_PW'):
+            raise RuntimeError('국내 일봉 수집에 필요한 KRX_ID와 KRX_PW를 설정하세요.')
+        if 'themes' not in domestic_context:
+            domestic_context['themes'] = get_automated_growth_themes()
+        if 'fund' not in domestic_context:
+            fund_df, cap_df = pd.DataFrame(), pd.DataFrame()
+            for i in range(10):
+                search_date = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
+                try:
+                    time.sleep(0.5)
+                    temp_fund = stock.get_market_fundamental_by_ticker(search_date, market='ALL')
+                    temp_cap = stock.get_market_cap_by_ticker(search_date, market='ALL')
+                    if (not temp_fund.empty and not temp_cap.empty
+                            and (temp_fund['PER'] > 0).any()
+                            and (temp_cap['시가총액'] > 0).any()):
+                        fund_df, cap_df = temp_fund, temp_cap
+                        break
+                except Exception as error:
+                    print(f'KRX {search_date}: {error}')
+            domestic_context['fund'], domestic_context['cap'] = fund_df, cap_df
+        top_themes, growth_focus = domestic_context['themes']
+        if category == 'domestic_theme':
+            return get_top_theme_stocks(top_themes, domestic_context['cap'])
+        return find_undervalued_turnaround_stocks(
+            domestic_context['fund'], domestic_context['cap'], growth_focus)
 
-    # 미국 지수별 구성 종목을 수집한 뒤 동일한 성장 저평가 스코어로 평가한다.
-    leading_sectors = get_us_leading_sectors()
-    sp500_tickers = get_index_tickers('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', 'S&P 500')
-    ndx_tickers = get_index_tickers(
-        (
-            'https://en.wikipedia.org/wiki/List_of_NASDAQ-100_companies',
-            'https://en.wikipedia.org/wiki/Nasdaq-100',
-        ),
-        'NASDAQ 100',
-    )
-    russell_tickers = get_index_tickers(
-        (
-            'https://en.wikipedia.org/wiki/List_of_Russell_1000_companies',
-            'https://en.wikipedia.org/wiki/Russell_1000_Index',
-        ),
-        'Russell 1000',
-    )
-    if not all((sp500_tickers, ndx_tickers, russell_tickers)):
-        raise RuntimeError('미국 지수 구성종목 수집 실패: 기존 data.json을 유지합니다.')
+    refresh('domestic_theme', lambda: domestic('domestic_theme'))
+    refresh('domestic_value', lambda: domestic('domestic_value'))
+    refresh('us_theme', get_us_hot_theme_stocks)
 
-    if sp500_tickers: results.extend(scan_us_tickers(sp500_tickers, 'S&P 500', leading_sectors))
-    if ndx_tickers: results.extend(scan_us_tickers(ndx_tickers, 'NASDAQ 100', leading_sectors))
-    if russell_tickers:
-        # 러셀 1000에서 성장 테마와 일치하는 종목들을 찾기 위해 상위 700개를 우선 스캔 (확대)
-        results.extend(scan_us_tickers(russell_tickers[:700], 'Russell 1000', leading_sectors, limit=30))
+    def scan_index(urls, label, limit=None):
+        tickers = get_index_tickers(urls, label)
+        if not tickers:
+            raise RuntimeError(f'{label}: 지수 구성종목 수집 실패')
+        return scan_us_tickers(tickers[:limit] if limit else tickers,
+                               label, get_us_leading_sectors())
 
-    results.append(market_status_item)
+    refresh('us_sp', lambda: scan_index(
+        'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', 'S&P 500'))
+    refresh('us_ndq', lambda: scan_index((
+        'https://en.wikipedia.org/wiki/List_of_NASDAQ-100_companies',
+        'https://en.wikipedia.org/wiki/Nasdaq-100'), 'NASDAQ 100'))
+    refresh('us_rsl', lambda: scan_index((
+        'https://en.wikipedia.org/wiki/List_of_Russell_1000_companies',
+        'https://en.wikipedia.org/wiki/Russell_1000_Index'), 'Russell 1000', 700))
+    refresh('market_status', lambda: [get_market_status_item()])
+    results.append({'category': 'collection_status', 'attempted_at': attempted_at,
+                    'tabs': statuses})
 
-    validate_snapshot(results, previous)
     temporary_path = snapshot_path.with_suffix('.json.tmp')
     with temporary_path.open('w', encoding='utf-8') as f:
         import json
@@ -1366,8 +1364,9 @@ def main():
             default=lambda value: value.item() if hasattr(value, "item") else str(value)
         )
     temporary_path.replace(snapshot_path)
-    stock_count = sum(1 for item in results if item.get('category') != 'market_status')
-    print(f"\n✅ 분석 완료! {stock_count}개 종목 저장됨.")
+    stock_count = sum(1 for item in results if item.get('category') not in ('market_status', 'collection_status'))
+    failed_count = sum(status['state'] != 'ok' for status in statuses.values())
+    print(f"\n분석 완료: {stock_count}개 종목 저장, 갱신 실패 {failed_count}개 탭 (기존 데이터 유지).")
 
 if __name__ == "__main__":
     main()

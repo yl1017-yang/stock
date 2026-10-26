@@ -1,20 +1,731 @@
 [
   {
     "category": "domestic_theme",
-    "theme": "아스콘(아스팔트 콘크리트)",
-    "name": "스페코",
-    "code": "013810",
-    "volume": 6736722,
-    "market_cap": 30116990850.0,
-    "change_1m": "+31.56%",
-    "change_3m": "+19.48%",
-    "per": "46.70",
-    "pbr": "0.67",
+    "theme": "의료AI",
+    "name": "토마토시스템",
+    "code": "393210",
+    "volume": 6139742,
+    "market_cap": 61989739680.0,
+    "change_1m": "+8.88%",
+    "change_3m": "+94.94%",
+    "per": "252.81",
+    "pbr": "2.30",
     "dividend": "N/A",
     "upside": "N/A",
     "fair_value": "N/A",
-    "current_price": 2055.0,
-    "rsi": 73.24,
+    "current_price": 4045.0,
+    "rsi": 61.45,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 8.1,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "의료AI",
+    "name": "루닛",
+    "code": "328130",
+    "volume": 4183481,
+    "market_cap": 1093790664200.0,
+    "change_1m": "+48.83%",
+    "change_3m": "+60.20%",
+    "per": "N/A",
+    "pbr": "3.30",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 14690.0,
+    "rsi": 69.0,
+    "risk_flags": [
+      "단기급등",
+      "20일선과열"
+    ],
+    "interest_level": "강함",
+    "interest_score": 8.1,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "의료AI",
+    "name": "뉴로핏",
+    "code": "380550",
+    "volume": 4139031,
+    "market_cap": 79780583640.0,
+    "change_1m": "-15.38%",
+    "change_3m": "-6.65%",
+    "per": "N/A",
+    "pbr": "2.41",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 6600.0,
+    "rsi": 35.2,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 8.1,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "의료AI",
+    "name": "신테카바이오",
+    "code": "226330",
+    "volume": 2163084,
+    "market_cap": 27412076750.0,
+    "change_1m": "-12.34%",
+    "change_3m": "-26.86%",
+    "per": "N/A",
+    "pbr": "1.06",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 1130.0,
+    "rsi": 38.11,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 8.1,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "의료AI",
+    "name": "뷰노",
+    "code": "338220",
+    "volume": 1950702,
+    "market_cap": 107534000640.0,
+    "change_1m": "+36.90%",
+    "change_3m": "+6.52%",
+    "per": "N/A",
+    "pbr": "3.01",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 7680.0,
+    "rsi": 44.92,
+    "risk_flags": [
+      "단기급등"
+    ],
+    "interest_level": "강함",
+    "interest_score": 8.1,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "2026 하반기 신규상장",
+    "name": "레몬헬스케어",
+    "code": "365660",
+    "volume": 16378534,
+    "market_cap": 54360458360.0,
+    "change_1m": "-7.70%",
+    "change_3m": "+3.48%",
+    "per": "N/A",
+    "pbr": "2.96",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 4015.0,
+    "rsi": 48.52,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 5.4,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "2026 하반기 신규상장",
+    "name": "엠에스바이오",
+    "code": "0013Y0",
+    "volume": 16046469,
+    "market_cap": 293244567000.0,
+    "change_1m": "N/A",
+    "change_3m": "N/A",
+    "per": "27.86",
+    "pbr": "4.10",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 10310.0,
+    "rsi": "N/A",
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 5.4,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "2026 하반기 신규상장",
+    "name": "빅웨이브로보틱스",
+    "code": "0035S0",
+    "volume": 5302882,
+    "market_cap": 297328398450.0,
+    "change_1m": "N/A",
+    "change_3m": "N/A",
+    "per": "311.29",
+    "pbr": "25.02",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 28950.0,
+    "rsi": "N/A",
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 5.4,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "2026 하반기 신규상장",
+    "name": "디티에스",
+    "code": "0015M0",
+    "volume": 5209557,
+    "market_cap": 337815384500.0,
+    "change_1m": "N/A",
+    "change_3m": "N/A",
+    "per": "14.21",
+    "pbr": "2.46",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 22100.0,
+    "rsi": "N/A",
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 5.4,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "2026 하반기 신규상장",
+    "name": "브릴스",
+    "code": "468670",
+    "volume": 4176560,
+    "market_cap": 216477513450.0,
+    "change_1m": "N/A",
+    "change_3m": "N/A",
+    "per": "98.04",
+    "pbr": "4.32",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 19510.0,
+    "rsi": "N/A",
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 5.4,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "원격진료/비대면진료(U-Healthcare)",
+    "name": "레몬헬스케어",
+    "code": "365660",
+    "volume": 16378534,
+    "market_cap": 54360458360.0,
+    "change_1m": "-7.70%",
+    "change_3m": "+3.48%",
+    "per": "N/A",
+    "pbr": "2.96",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 4015.0,
+    "rsi": 48.52,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 7.0,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "원격진료/비대면진료(U-Healthcare)",
+    "name": "토마토시스템",
+    "code": "393210",
+    "volume": 6139742,
+    "market_cap": 61989739680.0,
+    "change_1m": "+8.88%",
+    "change_3m": "+94.94%",
+    "per": "252.81",
+    "pbr": "2.30",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 4045.0,
+    "rsi": 61.45,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 7.0,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "원격진료/비대면진료(U-Healthcare)",
+    "name": "다이나믹솔루션",
+    "code": "290660",
+    "volume": 3900495,
+    "market_cap": 58559392896.0,
+    "change_1m": "-3.99%",
+    "change_3m": "-23.62%",
+    "per": "N/A",
+    "pbr": "1.06",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 1371.0,
+    "rsi": 54.22,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 7.0,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "원격진료/비대면진료(U-Healthcare)",
+    "name": "나노엔텍",
+    "code": "039860",
+    "volume": 2098729,
+    "market_cap": 182656189135.0,
+    "change_1m": "+16.25%",
+    "change_3m": "+38.41%",
+    "per": "30.41",
+    "pbr": "1.96",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 4865.0,
+    "rsi": 57.44,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 7.0,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "원격진료/비대면진료(U-Healthcare)",
+    "name": "씨어스",
+    "code": "458870",
+    "volume": 1160065,
+    "market_cap": 1067918331700.0,
+    "change_1m": "+11.11%",
+    "change_3m": "+11.33%",
+    "per": "25.41",
+    "pbr": "15.60",
+    "dividend": "N/A",
+    "upside": "+44.29%",
+    "fair_value": "40400",
+    "current_price": 28000.0,
+    "rsi": 52.44,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 7.0,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "로봇(산업용/협동로봇 등)",
+    "name": "앤로보틱스",
+    "code": "138360",
+    "volume": 33041209,
+    "market_cap": 179026955690.0,
+    "change_1m": "+21.07%",
+    "change_3m": "+15.12%",
+    "per": "17.00",
+    "pbr": "1.87",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 2040.0,
+    "rsi": 76.03,
+    "risk_flags": [
+      "RSI과열",
+      "20일선과열"
+    ],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "로봇(산업용/협동로봇 등)",
+    "name": "빅웨이브로보틱스",
+    "code": "0035S0",
+    "volume": 5302882,
+    "market_cap": 297328398450.0,
+    "change_1m": "N/A",
+    "change_3m": "N/A",
+    "per": "311.29",
+    "pbr": "25.02",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 28950.0,
+    "rsi": "N/A",
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "로봇(산업용/협동로봇 등)",
+    "name": "브릴스",
+    "code": "468670",
+    "volume": 4176560,
+    "market_cap": 216477513450.0,
+    "change_1m": "N/A",
+    "change_3m": "N/A",
+    "per": "98.04",
+    "pbr": "4.32",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 19510.0,
+    "rsi": "N/A",
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "로봇(산업용/협동로봇 등)",
+    "name": "원익홀딩스",
+    "code": "030530",
+    "volume": 2116045,
+    "market_cap": 1818954452550.0,
+    "change_1m": "-14.64%",
+    "change_3m": "+60.19%",
+    "per": "33.47",
+    "pbr": "1.77",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 23900.0,
+    "rsi": 37.35,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "로봇(산업용/협동로봇 등)",
+    "name": "한라캐스트",
+    "code": "125490",
+    "volume": 1060487,
+    "market_cap": 356262955520.0,
+    "change_1m": "-19.18%",
+    "change_3m": "+42.11%",
+    "per": "60.99",
+    "pbr": "3.23",
+    "dividend": "N/A",
+    "upside": "+83.30%",
+    "fair_value": "18000",
+    "current_price": 9820.0,
+    "rsi": 30.25,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "피지컬 AI/휴머노이드 로봇",
+    "name": "삼성전자",
+    "code": "005930",
+    "volume": 11324970,
+    "market_cap": 1245257343504000.0,
+    "change_1m": "-25.48%",
+    "change_3m": "-2.95%",
+    "per": "9.58",
+    "pbr": "2.48",
+    "dividend": "0.78%",
+    "upside": "+131.96%",
+    "fair_value": "495227",
+    "current_price": 213500.0,
+    "rsi": 24.9,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "피지컬 AI/휴머노이드 로봇",
+    "name": "유니테크노",
+    "code": "241690",
+    "volume": 9485613,
+    "market_cap": 81487450980.0,
+    "change_1m": "+30.52%",
+    "change_3m": "+31.85%",
+    "per": "N/A",
+    "pbr": "0.55",
+    "dividend": "0.52%",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 3250.0,
+    "rsi": 69.23,
+    "risk_flags": [
+      "단기급등",
+      "20일선과열"
+    ],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "피지컬 AI/휴머노이드 로봇",
+    "name": "빅웨이브로보틱스",
+    "code": "0035S0",
+    "volume": 5302882,
+    "market_cap": 297328398450.0,
+    "change_1m": "N/A",
+    "change_3m": "N/A",
+    "per": "311.29",
+    "pbr": "25.02",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 28950.0,
+    "rsi": "N/A",
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "피지컬 AI/휴머노이드 로봇",
+    "name": "한라캐스트",
+    "code": "125490",
+    "volume": 1060487,
+    "market_cap": 356262955520.0,
+    "change_1m": "-19.18%",
+    "change_3m": "+42.11%",
+    "per": "60.99",
+    "pbr": "3.23",
+    "dividend": "N/A",
+    "upside": "+83.30%",
+    "fair_value": "18000",
+    "current_price": 9820.0,
+    "rsi": 30.25,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "피지컬 AI/휴머노이드 로봇",
+    "name": "삼현",
+    "code": "437730",
+    "volume": 917624,
+    "market_cap": 1507694810850.0,
+    "change_1m": "-7.93%",
+    "change_3m": "+55.30%",
+    "per": "N/A",
+    "pbr": "12.67",
+    "dividend": "0.11%",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 47600.0,
+    "rsi": 42.97,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 6.5,
+    "opinion": "N/A",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (주도 테마)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_theme",
+    "theme": "엔터테인먼트",
+    "name": "에스팀",
+    "code": "458350",
+    "volume": 6551351,
+    "market_cap": 37641672000.0,
+    "change_1m": "+44.91%",
+    "change_3m": "+18.26%",
+    "per": "77.50",
+    "pbr": "1.30",
+    "dividend": "N/A",
+    "upside": "N/A",
+    "fair_value": "N/A",
+    "current_price": 4340.0,
+    "rsi": 71.6,
     "risk_flags": [
       "고점주의",
       "RSI과열",
@@ -30,108 +741,52 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:48"
   },
   {
     "category": "domestic_theme",
-    "theme": "아스콘(아스팔트 콘크리트)",
-    "name": "SG",
-    "code": "255220",
-    "volume": 1358647,
-    "market_cap": 156585834080.0,
-    "change_1m": "-6.74%",
-    "change_3m": "-11.45%",
-    "per": "N/A",
-    "pbr": "1.04",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 1052.0,
-    "rsi": 36.58,
+    "theme": "엔터테인먼트",
+    "name": "카카오",
+    "code": "035720",
+    "volume": 1180656,
+    "market_cap": 13090665070500.0,
+    "change_1m": "-12.57%",
+    "change_3m": "-17.11%",
+    "per": "37.74",
+    "pbr": "1.11",
+    "dividend": "0.25%",
+    "upside": "+66.87%",
+    "fair_value": "49310",
+    "current_price": 29550.0,
+    "rsi": 23.45,
     "risk_flags": [],
     "interest_level": "강함",
     "interest_score": 7.0,
-    "opinion": "N/A",
+    "opinion": "3.90 매수",
     "grades": {
       "profit": "보통",
       "health": "보통",
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:48"
   },
   {
     "category": "domestic_theme",
-    "theme": "아스콘(아스팔트 콘크리트)",
-    "name": "HC보광산업",
-    "code": "225530",
-    "volume": 255952,
-    "market_cap": 80853667575.0,
-    "change_1m": "+3.04%",
-    "change_3m": "+18.36%",
-    "per": "245.00",
-    "pbr": "0.88",
-    "dividend": "2.27%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 2205.0,
-    "rsi": 52.21,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 7.0,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "아스콘(아스팔트 콘크리트)",
-    "name": "유진기업",
-    "code": "023410",
-    "volume": 154826,
-    "market_cap": 239663675300.0,
-    "change_1m": "-5.24%",
-    "change_3m": "-6.96%",
-    "per": "N/A",
-    "pbr": "0.23",
-    "dividend": "5.85%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 3075.0,
-    "rsi": 33.64,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 7.0,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "아스콘(아스팔트 콘크리트)",
-    "name": "한국석유",
-    "code": "004090",
-    "volume": 72606,
-    "market_cap": 142301085200.0,
-    "change_1m": "-2.19%",
-    "change_3m": "+2.29%",
-    "per": "9.57",
-    "pbr": "0.66",
-    "dividend": "1.08%",
-    "upside": "+43.37%",
-    "fair_value": "16000",
-    "current_price": 11160.0,
-    "rsi": 41.49,
+    "theme": "엔터테인먼트",
+    "name": "JYP Ent.",
+    "code": "035900",
+    "volume": 860640,
+    "market_cap": 1279169712000.0,
+    "change_1m": "+11.24%",
+    "change_3m": "-6.56%",
+    "per": "13.76",
+    "pbr": "2.15",
+    "dividend": "2.09%",
+    "upside": "+40.45%",
+    "fair_value": "59059",
+    "current_price": 42050.0,
+    "rsi": 63.91,
     "risk_flags": [],
     "interest_level": "강함",
     "interest_score": 7.0,
@@ -142,27 +797,27 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:48"
   },
   {
     "category": "domestic_theme",
-    "theme": "스포츠행사 수혜(올림픽, 월드컵 등)",
-    "name": "팜스토리",
-    "code": "027710",
-    "volume": 248945,
-    "market_cap": 129577505800.0,
-    "change_1m": "+3.29%",
-    "change_3m": "+9.23%",
-    "per": "7.68",
-    "pbr": "0.45",
-    "dividend": "8.62%",
+    "theme": "엔터테인먼트",
+    "name": "SM C&C",
+    "code": "048550",
+    "volume": 372253,
+    "market_cap": 79305988400.0,
+    "change_1m": "-23.25%",
+    "change_3m": "-47.21%",
+    "per": "N/A",
+    "pbr": "1.05",
+    "dividend": "N/A",
     "upside": "N/A",
     "fair_value": "N/A",
-    "current_price": 1160.0,
-    "rsi": 63.24,
+    "current_price": 822.0,
+    "rsi": 21.15,
     "risk_flags": [],
     "interest_level": "강함",
-    "interest_score": 6.5,
+    "interest_score": 7.0,
     "opinion": "N/A",
     "grades": {
       "profit": "보통",
@@ -170,85 +825,27 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:48"
   },
   {
     "category": "domestic_theme",
-    "theme": "스포츠행사 수혜(올림픽, 월드컵 등)",
-    "name": "하림",
-    "code": "136480",
-    "volume": 232762,
-    "market_cap": 280924661790.0,
-    "change_1m": "+0.19%",
-    "change_3m": "-1.12%",
-    "per": "15.29",
-    "pbr": "0.84",
-    "dividend": "1.51%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 2645.0,
-    "rsi": 47.27,
+    "theme": "엔터테인먼트",
+    "name": "하이브",
+    "code": "352820",
+    "volume": 137667,
+    "market_cap": 7504900147600.0,
+    "change_1m": "+11.98%",
+    "change_3m": "-6.46%",
+    "per": "N/A",
+    "pbr": "2.19",
+    "dividend": "0.28%",
+    "upside": "+65.49%",
+    "fair_value": "292250",
+    "current_price": 176600.0,
+    "rsi": 66.36,
     "risk_flags": [],
     "interest_level": "강함",
-    "interest_score": 6.5,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "스포츠행사 수혜(올림픽, 월드컵 등)",
-    "name": "이지홀딩스",
-    "code": "035810",
-    "volume": 165178,
-    "market_cap": 285161537700.0,
-    "change_1m": "-4.58%",
-    "change_3m": "+0.00%",
-    "per": "12.72",
-    "pbr": "0.44",
-    "dividend": "31.11%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 4375.0,
-    "rsi": 43.57,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 6.5,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "스포츠행사 수혜(올림픽, 월드컵 등)",
-    "name": "하이트진로",
-    "code": "000080",
-    "volume": 100995,
-    "market_cap": 1101097692700.0,
-    "change_1m": "+3.92%",
-    "change_3m": "+2.35%",
-    "per": "23.68",
-    "pbr": "0.95",
-    "dividend": "4.47%",
-    "upside": "+54.95%",
-    "fair_value": "24250",
-    "current_price": 15650.0,
-    "rsi": 75.15,
-    "risk_flags": [
-      "RSI과열"
-    ],
-    "interest_level": "강함",
-    "interest_score": 6.5,
+    "interest_score": 7.0,
     "opinion": "4.00 매수",
     "grades": {
       "profit": "보통",
@@ -256,616 +853,79 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "스포츠행사 수혜(올림픽, 월드컵 등)",
-    "name": "마니커",
-    "code": "027740",
-    "volume": 35939,
-    "market_cap": 35947355048.0,
-    "change_1m": "-2.29%",
-    "change_3m": "+18.29%",
-    "per": "N/A",
-    "pbr": "0.96",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 1151.0,
-    "rsi": 50.22,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 6.5,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "화학섬유",
-    "name": "우성머티리얼스",
-    "code": "011300",
-    "volume": 608645,
-    "market_cap": 55967778165.0,
-    "change_1m": "+1.67%",
-    "change_3m": "+2.43%",
-    "per": "N/A",
-    "pbr": "1.35",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 2735.0,
-    "rsi": 42.21,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 6.0,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "화학섬유",
-    "name": "코오롱인더",
-    "code": "120110",
-    "volume": 254975,
-    "market_cap": 1247252232800.0,
-    "change_1m": "-25.59%",
-    "change_3m": "-23.94%",
-    "per": "9.39",
-    "pbr": "0.31",
-    "dividend": "3.15%",
-    "upside": "+144.96%",
-    "fair_value": "101167",
-    "current_price": 41300.0,
-    "rsi": 18.06,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 6.0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "화학섬유",
-    "name": "휴비스",
-    "code": "079980",
-    "volume": 71051,
-    "market_cap": 63169500000.0,
-    "change_1m": "-3.67%",
-    "change_3m": "-4.77%",
-    "per": "N/A",
-    "pbr": "0.24",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 1838.0,
-    "rsi": 39.86,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 6.0,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "화학섬유",
-    "name": "효성티앤씨",
-    "code": "298020",
-    "volume": 10952,
-    "market_cap": 1086248182000.0,
-    "change_1m": "-20.06%",
-    "change_3m": "-22.65%",
-    "per": "9.65",
-    "pbr": "0.62",
-    "dividend": "4.02%",
-    "upside": "+93.23%",
-    "fair_value": "485000",
-    "current_price": 251000.0,
-    "rsi": 37.17,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 6.0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "화학섬유",
-    "name": "태광산업",
-    "code": "003240",
-    "volume": 1218,
-    "market_cap": 936369400000.0,
-    "change_1m": "-7.10%",
-    "change_3m": "-6.48%",
-    "per": "7.85",
-    "pbr": "0.17",
-    "dividend": "0.21%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 837000.0,
-    "rsi": 30.18,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 6.0,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "주류업(주정, 에탄올 등)",
-    "name": "MH에탄올",
-    "code": "023150",
-    "volume": 337345,
-    "market_cap": 16309768790.0,
-    "change_1m": "+27.80%",
-    "change_3m": "+31.12%",
-    "per": "N/A",
-    "pbr": "0.59",
-    "dividend": "4.76%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 2625.0,
-    "rsi": 74.12,
-    "risk_flags": [
-      "RSI과열",
-      "52주고점근접"
-    ],
-    "interest_level": "강함",
-    "interest_score": 4.9,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "주류업(주정, 에탄올 등)",
-    "name": "보해양조",
-    "code": "000890",
-    "volume": 102524,
-    "market_cap": 35414000050.0,
-    "change_1m": "-2.23%",
-    "change_3m": "-8.04%",
-    "per": "9.84",
-    "pbr": "0.38",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 1270.0,
-    "rsi": 44.92,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.9,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "주류업(주정, 에탄올 등)",
-    "name": "하이트진로",
-    "code": "000080",
-    "volume": 100995,
-    "market_cap": 1101097692700.0,
-    "change_1m": "+3.92%",
-    "change_3m": "+2.35%",
-    "per": "23.68",
-    "pbr": "0.95",
-    "dividend": "4.47%",
-    "upside": "+54.95%",
-    "fair_value": "24250",
-    "current_price": 15650.0,
-    "rsi": 75.15,
-    "risk_flags": [
-      "RSI과열"
-    ],
-    "interest_level": "강함",
-    "interest_score": 4.9,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "주류업(주정, 에탄올 등)",
-    "name": "한국알콜",
-    "code": "017890",
-    "volume": 72398,
-    "market_cap": 284674177620.0,
-    "change_1m": "-4.98%",
-    "change_3m": "+0.44%",
-    "per": "7.40",
-    "pbr": "0.48",
-    "dividend": "0.80%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 13730.0,
-    "rsi": 22.25,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.9,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "주류업(주정, 에탄올 등)",
-    "name": "한울앤제주",
-    "code": "276730",
-    "volume": 31832,
-    "market_cap": 18650304200.0,
-    "change_1m": "-14.87%",
-    "change_3m": "-64.80%",
-    "per": "N/A",
-    "pbr": "0.82",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 790.0,
-    "rsi": 44.0,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.9,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "건설 대표주",
-    "name": "대우건설",
-    "code": "047040",
-    "volume": 2694438,
-    "market_cap": 6040020084000.0,
-    "change_1m": "-22.95%",
-    "change_3m": "-4.02%",
-    "per": "N/A",
-    "pbr": "1.58",
-    "dividend": "N/A",
-    "upside": "+52.88%",
-    "fair_value": "22275",
-    "current_price": 14570.0,
-    "rsi": 27.91,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 5.6,
-    "opinion": "3.95 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "건설 대표주",
-    "name": "GS건설",
-    "code": "006360",
-    "volume": 1013011,
-    "market_cap": 2524653955000.0,
-    "change_1m": "-22.13%",
-    "change_3m": "+0.34%",
-    "per": "19.15",
-    "pbr": "0.51",
-    "dividend": "1.71%",
-    "upside": "+47.91%",
-    "fair_value": "43190",
-    "current_price": 29200.0,
-    "rsi": 33.04,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 5.6,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "건설 대표주",
-    "name": "현대건설",
-    "code": "000720",
-    "volume": 528317,
-    "market_cap": 10300408262500.0,
-    "change_1m": "-30.96%",
-    "change_3m": "-12.16%",
-    "per": "22.80",
-    "pbr": "1.10",
-    "dividend": "0.88%",
-    "upside": "+81.48%",
-    "fair_value": "165143",
-    "current_price": 91000.0,
-    "rsi": 22.89,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 5.6,
-    "opinion": "3.95 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "건설 대표주",
-    "name": "DL이앤씨",
-    "code": "375500",
-    "volume": 409223,
-    "market_cap": 2317748017700.0,
-    "change_1m": "-29.80%",
-    "change_3m": "-6.73%",
-    "per": "4.12",
-    "pbr": "0.45",
-    "dividend": "1.49%",
-    "upside": "+58.93%",
-    "fair_value": "94722",
-    "current_price": 59600.0,
-    "rsi": 18.56,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 5.6,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "건설 대표주",
-    "name": "삼성물산",
-    "code": "028260",
-    "volume": 261404,
-    "market_cap": 46704263328000.0,
-    "change_1m": "-21.54%",
-    "change_3m": "-15.76%",
-    "per": "17.31",
-    "pbr": "0.44",
-    "dividend": "0.98%",
-    "upside": "+73.73%",
-    "fair_value": "496875",
-    "current_price": 286000.0,
-    "rsi": 29.79,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 5.6,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "골프",
-    "name": "아난티",
-    "code": "025980",
-    "volume": 872137,
-    "market_cap": 383852405550.0,
-    "change_1m": "-28.08%",
-    "change_3m": "+7.88%",
-    "per": "N/A",
-    "pbr": "0.54",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 3970.0,
-    "rsi": 15.41,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.5,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "골프",
-    "name": "라온피플",
-    "code": "300120",
-    "volume": 512902,
-    "market_cap": 34306282395.0,
-    "change_1m": "+8.06%",
-    "change_3m": "+41.38%",
-    "per": "N/A",
-    "pbr": "0.71",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 3485.0,
-    "rsi": 66.67,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.5,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "골프",
-    "name": "브이씨",
-    "code": "365900",
-    "volume": 98930,
-    "market_cap": 18860574000.0,
-    "change_1m": "-5.66%",
-    "change_3m": "-6.34%",
-    "per": "N/A",
-    "pbr": "0.49",
-    "dividend": "N/A",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 2585.0,
-    "rsi": 53.81,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.5,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "골프",
-    "name": "미스토홀딩스",
-    "code": "081660",
-    "volume": 79217,
-    "market_cap": 1940506752000.0,
-    "change_1m": "-3.04%",
-    "change_3m": "-17.16%",
-    "per": "7.55",
-    "pbr": "0.90",
-    "dividend": "5.40%",
-    "upside": "+65.31%",
-    "fair_value": "60667",
-    "current_price": 36700.0,
-    "rsi": 41.6,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.5,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_theme",
-    "theme": "골프",
-    "name": "베뉴지",
-    "code": "019010",
-    "volume": 62459,
-    "market_cap": 176412000000.0,
-    "change_1m": "-24.75%",
-    "change_3m": "-10.02%",
-    "per": "0.53",
-    "pbr": "0.23",
-    "dividend": "1.88%",
-    "upside": "N/A",
-    "fair_value": "N/A",
-    "current_price": 3725.0,
-    "rsi": 26.33,
-    "risk_flags": [],
-    "interest_level": "강함",
-    "interest_score": 4.5,
-    "opinion": "N/A",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (주도 테마)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:48"
   },
   {
     "category": "domestic_value",
-    "theme": "화장품",
-    "name": "동국제약",
-    "code": "086450",
-    "volume": 452764,
-    "change_1m": "+18.87%",
-    "change_3m": "+30.52%",
-    "per": "16.44",
+    "theme": "엔터테인먼트",
+    "name": "에스엠",
+    "code": "041510",
+    "volume": 65093,
+    "change_1m": "-0.12%",
+    "change_3m": "+17.97%",
+    "per": "5.33",
+    "pbr": "1.85",
+    "dividend": "2.00%",
+    "upside": "+38.15%",
+    "fair_value": "114250",
+    "current_price": 82700.0,
+    "rsi": 57.59,
+    "risk_flags": [],
+    "interest_level": "강함",
+    "interest_score": 7.0,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_value",
+    "theme": "엔터테인먼트",
+    "name": "CJ ENM",
+    "code": "035760",
+    "volume": 54443,
+    "change_1m": "+5.27%",
+    "change_3m": "+33.61%",
+    "per": "28.69",
+    "pbr": "0.30",
+    "dividend": "N/A",
+    "upside": "+22.34%",
+    "fair_value": "50100",
+    "current_price": 40950.0,
+    "rsi": 75.32,
+    "risk_flags": [
+      "RSI과열"
+    ],
+    "interest_level": "강함",
+    "interest_score": 7.0,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-10-26 20:48"
+  },
+  {
+    "category": "domestic_value",
+    "theme": "지능형로봇/인공지능(AI)",
+    "name": "삼성에스디에스",
+    "code": "018260",
+    "volume": 427453,
+    "change_1m": "-2.71%",
+    "change_3m": "+7.23%",
+    "per": "21.69",
     "pbr": "1.66",
-    "dividend": "0.82%",
-    "upside": "+25.77%",
-    "fair_value": "30500",
-    "current_price": 24250.0,
-    "rsi": 60.1,
+    "dividend": "1.50%",
+    "upside": "+28.80%",
+    "fair_value": "276929",
+    "current_price": 215000.0,
+    "rsi": 47.81,
     "risk_flags": [],
     "interest_level": "보통",
     "interest_score": 3.8,
@@ -876,82 +936,26 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:48"
   },
   {
     "category": "domestic_value",
-    "theme": "백신/진단시약/방역(신종플루, AI 등)",
-    "name": "유한양행",
-    "code": "000100",
-    "volume": 386541,
-    "change_1m": "+13.37%",
-    "change_3m": "+17.78%",
-    "per": "32.59",
-    "pbr": "2.75",
-    "dividend": "0.71%",
-    "upside": "+42.55%",
-    "fair_value": "120882",
-    "current_price": 84800.0,
-    "rsi": 66.45,
+    "theme": "마이데이터",
+    "name": "NICE평가정보",
+    "code": "030190",
+    "volume": 84029,
+    "change_1m": "+8.66%",
+    "change_3m": "+20.07%",
+    "per": "12.96",
+    "pbr": "2.15",
+    "dividend": "2.99%",
+    "upside": "+18.13%",
+    "fair_value": "20000",
+    "current_price": 16930.0,
+    "rsi": 57.82,
     "risk_flags": [],
-    "interest_level": "보통",
-    "interest_score": 3.8,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "백신/진단시약/방역(신종플루, AI 등)",
-    "name": "씨젠",
-    "code": "096530",
-    "volume": 206346,
-    "change_1m": "-1.17%",
-    "change_3m": "+19.86%",
-    "per": "32.33",
-    "pbr": "1.54",
-    "dividend": "2.95%",
-    "upside": "+42.01%",
-    "fair_value": "48000",
-    "current_price": 33800.0,
-    "rsi": 36.95,
-    "risk_flags": [],
-    "interest_level": "보통",
-    "interest_score": 3.8,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "스포츠행사 수혜(올림픽, 월드컵 등)",
-    "name": "하이트진로",
-    "code": "000080",
-    "volume": 100995,
-    "change_1m": "+3.92%",
-    "change_3m": "+2.35%",
-    "per": "26.34",
-    "pbr": "0.98",
-    "dividend": "4.46%",
-    "upside": "+54.95%",
-    "fair_value": "24250",
-    "current_price": 15650.0,
-    "rsi": 75.15,
-    "risk_flags": [
-      "RSI과열"
-    ],
     "interest_level": "강함",
-    "interest_score": 6.5,
+    "interest_score": 5.8,
     "opinion": "4.00 매수",
     "grades": {
       "profit": "보통",
@@ -959,23 +963,23 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:48"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "삼성E&A",
     "code": "028050",
-    "volume": 13099086,
-    "change_1m": "+15.20%",
-    "change_3m": "+24.03%",
+    "volume": 5666914,
+    "change_1m": "+21.17%",
+    "change_3m": "+36.13%",
     "per": "18.98",
     "pbr": "2.47",
     "dividend": "1.32%",
-    "upside": "+19.81%",
-    "fair_value": "70810",
-    "current_price": 59100.0,
-    "rsi": 69.38,
+    "upside": "+26.61%",
+    "fair_value": "76095",
+    "current_price": 60100.0,
+    "rsi": 69.98,
     "risk_flags": [
       "20일선과열"
     ],
@@ -988,49 +992,22 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:41"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "삼성에스디에스",
-    "code": "018260",
-    "volume": 366621,
-    "change_1m": "-5.78%",
-    "change_3m": "-2.53%",
-    "per": "21.74",
-    "pbr": "1.67",
-    "dividend": "1.49%",
-    "upside": "+30.63%",
-    "fair_value": "276929",
-    "current_price": 212000.0,
-    "rsi": 44.29,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "LG씨엔에스",
     "code": "064400",
-    "volume": 831052,
-    "change_1m": "+1.12%",
-    "change_3m": "+7.76%",
-    "per": "16.00",
-    "pbr": "2.41",
-    "dividend": "2.54%",
-    "upside": "+32.62%",
+    "volume": 1165900,
+    "change_1m": "+5.43%",
+    "change_3m": "+19.42%",
+    "per": "16.16",
+    "pbr": "2.43",
+    "dividend": "2.52%",
+    "upside": "+29.74%",
     "fair_value": "95750",
-    "current_price": 72200.0,
+    "current_price": 73800.0,
     "rsi": 52.59,
     "risk_flags": [],
     "interest_level": "N/A",
@@ -1042,50 +1019,52 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
-    "name": "메리츠금융지주",
-    "code": "138040",
-    "volume": 207508,
-    "change_1m": "-0.62%",
-    "change_3m": "+1.83%",
-    "per": "9.90",
-    "pbr": "2.09",
-    "dividend": "N/A",
-    "upside": "+20.28%",
-    "fair_value": "153833",
-    "current_price": 127900.0,
-    "rsi": 51.11,
-    "risk_flags": [],
+    "name": "오리온",
+    "code": "271560",
+    "volume": 150116,
+    "change_1m": "+2.00%",
+    "change_3m": "-13.47%",
+    "per": "11.67",
+    "pbr": "1.17",
+    "dividend": "3.10%",
+    "upside": "+56.86%",
+    "fair_value": "176308",
+    "current_price": 112400.0,
+    "rsi": 71.61,
+    "risk_flags": [
+      "RSI과열"
+    ],
     "interest_level": "N/A",
     "interest_score": 0,
-    "opinion": "3.83 매수",
+    "opinion": "4.00 매수",
     "grades": {
       "profit": "보통",
       "health": "보통",
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "DB손해보험",
     "code": "005830",
-    "volume": 134925,
-    "change_1m": "-0.70%",
-    "change_3m": "+12.48%",
-    "per": "6.22",
-    "pbr": "1.03",
-    "dividend": "4.13%",
-    "upside": "+31.46%",
+    "volume": 87790,
+    "change_1m": "-1.47%",
+    "change_3m": "+14.03%",
+    "per": "6.07",
+    "pbr": "1.00",
+    "dividend": "4.23%",
+    "upside": "+33.27%",
     "fair_value": "241625",
-    "current_price": 183800.0,
-    "rsi": 50.94,
+    "current_price": 181300.0,
+    "rsi": 48.65,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
@@ -1096,104 +1075,50 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "디케이티",
-    "code": "290550",
-    "volume": 909010,
-    "change_1m": "+19.81%",
-    "change_3m": "+22.38%",
-    "per": "22.35",
-    "pbr": "2.55",
-    "dividend": "N/A",
-    "upside": "+16.73%",
-    "fair_value": "30000",
-    "current_price": 25700.0,
-    "rsi": 61.18,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "HMM",
     "code": "011200",
-    "volume": 982838,
-    "change_1m": "+6.13%",
-    "change_3m": "+8.96%",
-    "per": "11.61",
+    "volume": 625001,
+    "change_1m": "+7.67%",
+    "change_3m": "+12.25%",
+    "per": "11.56",
     "pbr": "0.80",
-    "dividend": "3.09%",
-    "upside": "+13.94%",
-    "fair_value": "25636",
-    "current_price": 22500.0,
-    "rsi": 62.73,
+    "dividend": "3.10%",
+    "upside": "+15.81%",
+    "fair_value": "26000",
+    "current_price": 22450.0,
+    "rsi": 60.0,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
-    "opinion": "3.50 매수",
+    "opinion": "3.55 매수",
     "grades": {
       "profit": "보통",
       "health": "보통",
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "한국타이어앤테크놀로지",
-    "code": "161390",
-    "volume": 246195,
-    "change_1m": "+6.56%",
-    "change_3m": "-11.60%",
-    "per": "6.73",
-    "pbr": "0.61",
-    "dividend": "3.83%",
-    "upside": "+42.83%",
-    "fair_value": "88125",
-    "current_price": 61700.0,
-    "rsi": 64.42,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "코웨이",
     "code": "021240",
-    "volume": 128574,
-    "change_1m": "+6.63%",
-    "change_3m": "+14.95%",
-    "per": "12.28",
-    "pbr": "2.08",
-    "dividend": "1.85%",
-    "upside": "+24.10%",
+    "volume": 131741,
+    "change_1m": "+4.81%",
+    "change_3m": "+14.58%",
+    "per": "12.03",
+    "pbr": "2.03",
+    "dividend": "1.89%",
+    "upside": "+26.00%",
     "fair_value": "131667",
-    "current_price": 106100.0,
-    "rsi": 63.57,
+    "current_price": 104500.0,
+    "rsi": 54.36,
     "risk_flags": [
       "52주고점근접"
     ],
@@ -1206,23 +1131,50 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
+  },
+  {
+    "category": "domestic_value",
+    "theme": "국내 숨은 저평가",
+    "name": "유한양행",
+    "code": "000100",
+    "volume": 165207,
+    "change_1m": "+10.14%",
+    "change_3m": "+15.28%",
+    "per": "31.44",
+    "pbr": "2.65",
+    "dividend": "0.73%",
+    "upside": "+48.32%",
+    "fair_value": "120882",
+    "current_price": 81500.0,
+    "rsi": 60.77,
+    "risk_flags": [],
+    "interest_level": "N/A",
+    "interest_score": 0,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "팬오션",
     "code": "028670",
-    "volume": 2186347,
-    "change_1m": "+7.09%",
-    "change_3m": "+18.13%",
-    "per": "10.99",
-    "pbr": "0.58",
-    "dividend": "2.42%",
-    "upside": "+37.08%",
-    "fair_value": "8485",
-    "current_price": 6190.0,
-    "rsi": 54.68,
+    "volume": 1960942,
+    "change_1m": "+6.60%",
+    "change_3m": "+18.18%",
+    "per": "10.64",
+    "pbr": "0.56",
+    "dividend": "2.50%",
+    "upside": "+43.18%",
+    "fair_value": "8562",
+    "current_price": 5980.0,
+    "rsi": 45.85,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
@@ -1233,133 +1185,26 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
-    "name": "농심",
-    "code": "004370",
-    "volume": 33163,
-    "change_1m": "+2.82%",
-    "change_3m": "+6.64%",
-    "per": "13.72",
-    "pbr": "0.83",
-    "dividend": "1.49%",
-    "upside": "+41.29%",
-    "fair_value": "567273",
-    "current_price": 401500.0,
-    "rsi": 48.89,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "3.92 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "오리온",
-    "code": "271560",
-    "volume": 96410,
-    "change_1m": "+0.18%",
-    "change_3m": "-14.69%",
-    "per": "11.50",
-    "pbr": "1.16",
-    "dividend": "3.14%",
-    "upside": "+58.98%",
-    "fair_value": "176308",
-    "current_price": 110900.0,
-    "rsi": 66.67,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "에스엠",
-    "code": "041510",
-    "volume": 107308,
-    "change_1m": "+0.12%",
-    "change_3m": "+10.89%",
-    "per": "5.47",
-    "pbr": "1.89",
-    "dividend": "1.95%",
-    "upside": "+38.48%",
-    "fair_value": "114250",
-    "current_price": 82500.0,
-    "rsi": 58.71,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "한국가스공사",
-    "code": "036460",
-    "volume": 200068,
-    "change_1m": "+1.67%",
-    "change_3m": "+3.85%",
-    "per": "25.02",
-    "pbr": "0.30",
-    "dividend": "3.15%",
-    "upside": "+34.93%",
-    "fair_value": "49182",
-    "current_price": 36450.0,
-    "rsi": 65.22,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "계룡건설",
-    "code": "013580",
-    "volume": 226134,
-    "change_1m": "+14.41%",
-    "change_3m": "+36.81%",
-    "per": "2.36",
-    "pbr": "0.25",
-    "dividend": "2.63%",
-    "upside": "+46.95%",
-    "fair_value": "38500",
-    "current_price": 26200.0,
-    "rsi": 75.56,
+    "name": "에스원",
+    "code": "012750",
+    "volume": 120524,
+    "change_1m": "+14.20%",
+    "change_3m": "+30.15%",
+    "per": "17.67",
+    "pbr": "1.80",
+    "dividend": "3.43%",
+    "upside": "+15.83%",
+    "fair_value": "109000",
+    "current_price": 94100.0,
+    "rsi": 73.58,
     "risk_flags": [
-      "RSI과열"
+      "RSI과열",
+      "52주고점근접"
     ],
     "interest_level": "N/A",
     "interest_score": 0,
@@ -1370,50 +1215,77 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
-    "name": "제일기획",
-    "code": "030000",
-    "volume": 287824,
-    "change_1m": "+9.53%",
-    "change_3m": "+0.89%",
-    "per": "9.46",
-    "pbr": "1.25",
-    "dividend": "6.34%",
-    "upside": "+23.49%",
-    "fair_value": "23833",
-    "current_price": 19300.0,
-    "rsi": 62.5,
+    "name": "동국제약",
+    "code": "086450",
+    "volume": 406568,
+    "change_1m": "+9.09%",
+    "change_3m": "+34.02%",
+    "per": "15.74",
+    "pbr": "1.59",
+    "dividend": "0.85%",
+    "upside": "+30.34%",
+    "fair_value": "30500",
+    "current_price": 23400.0,
+    "rsi": 52.48,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
-    "opinion": "3.92 매수",
+    "opinion": "4.00 매수",
     "grades": {
       "profit": "보통",
       "health": "보통",
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
+  },
+  {
+    "category": "domestic_value",
+    "theme": "국내 숨은 저평가",
+    "name": "디케이티",
+    "code": "290550",
+    "volume": 310229,
+    "change_1m": "+11.56%",
+    "change_3m": "+34.57%",
+    "per": "21.23",
+    "pbr": "2.43",
+    "dividend": "N/A",
+    "upside": "+21.95%",
+    "fair_value": "30000",
+    "current_price": 24600.0,
+    "rsi": 52.11,
+    "risk_flags": [],
+    "interest_level": "N/A",
+    "interest_score": 0,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "펌텍코리아",
     "code": "251970",
-    "volume": 66062,
-    "change_1m": "+19.62%",
-    "change_3m": "+41.77%",
-    "per": "25.09",
-    "pbr": "2.93",
-    "dividend": "0.65%",
-    "upside": "+15.82%",
+    "volume": 98182,
+    "change_1m": "+16.81%",
+    "change_3m": "+41.75%",
+    "per": "24.69",
+    "pbr": "2.89",
+    "dividend": "0.66%",
+    "upside": "+18.40%",
     "fair_value": "79800",
-    "current_price": 68900.0,
-    "rsi": 58.7,
+    "current_price": 67400.0,
+    "rsi": 60.38,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
@@ -1424,23 +1296,23 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
-    "name": "하림지주",
-    "code": "003380",
-    "volume": 385188,
-    "change_1m": "+2.97%",
-    "change_3m": "+14.43%",
-    "per": "4.74",
-    "pbr": "0.34",
-    "dividend": "1.07%",
-    "upside": "+62.16%",
-    "fair_value": "18000",
-    "current_price": 11100.0,
-    "rsi": 52.5,
+    "name": "씨젠",
+    "code": "096530",
+    "volume": 184213,
+    "change_1m": "-1.77%",
+    "change_3m": "+26.91%",
+    "per": "32.04",
+    "pbr": "1.52",
+    "dividend": "2.98%",
+    "upside": "+44.36%",
+    "fair_value": "48000",
+    "current_price": 33250.0,
+    "rsi": 36.22,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
@@ -1451,77 +1323,23 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "서부T&D",
-    "code": "006730",
-    "volume": 288973,
-    "change_1m": "+9.31%",
-    "change_3m": "+15.89%",
-    "per": "9.51",
-    "pbr": "0.71",
-    "dividend": "0.85%",
-    "upside": "+50.13%",
-    "fair_value": "17625",
-    "current_price": 11740.0,
-    "rsi": 57.73,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
-  },
-  {
-    "category": "domestic_value",
-    "theme": "국내 숨은 저평가",
-    "name": "SK가스",
-    "code": "018670",
-    "volume": 12656,
-    "change_1m": "+7.10%",
-    "change_3m": "+5.77%",
-    "per": "9.89",
-    "pbr": "0.80",
-    "dividend": "3.47%",
-    "upside": "+34.11%",
-    "fair_value": "344000",
-    "current_price": 256500.0,
-    "rsi": 59.12,
-    "risk_flags": [],
-    "interest_level": "N/A",
-    "interest_score": 0,
-    "opinion": "4.00 매수",
-    "grades": {
-      "profit": "보통",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
     "name": "LX인터내셔널",
     "code": "001120",
-    "volume": 60171,
-    "change_1m": "+3.14%",
-    "change_3m": "+13.26%",
-    "per": "10.85",
-    "pbr": "0.56",
-    "dividend": "4.67%",
-    "upside": "+40.18%",
+    "volume": 145646,
+    "change_1m": "+1.61%",
+    "change_3m": "+12.02%",
+    "per": "10.45",
+    "pbr": "0.53",
+    "dividend": "4.85%",
+    "upside": "+45.99%",
     "fair_value": "59857",
-    "current_price": 42700.0,
-    "rsi": 50.52,
+    "current_price": 41000.0,
+    "rsi": 35.96,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
@@ -1532,52 +1350,50 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
-    "name": "CJ ENM",
-    "code": "035760",
-    "volume": 59821,
-    "change_1m": "+7.11%",
-    "change_3m": "+28.39%",
-    "per": "28.52",
-    "pbr": "0.30",
-    "dividend": "N/A",
-    "upside": "+23.10%",
-    "fair_value": "50100",
-    "current_price": 40700.0,
-    "rsi": 71.91,
-    "risk_flags": [
-      "RSI과열"
-    ],
+    "name": "제일기획",
+    "code": "030000",
+    "volume": 236855,
+    "change_1m": "+8.17%",
+    "change_3m": "+1.97%",
+    "per": "9.36",
+    "pbr": "1.23",
+    "dividend": "6.42%",
+    "upside": "+24.19%",
+    "fair_value": "23833",
+    "current_price": 19190.0,
+    "rsi": 60.1,
+    "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
-    "opinion": "4.00 매수",
+    "opinion": "3.92 매수",
     "grades": {
       "profit": "보통",
       "health": "보통",
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "domestic_value",
     "theme": "국내 숨은 저평가",
-    "name": "덴티움",
-    "code": "145720",
-    "volume": 52860,
-    "change_1m": "+9.22%",
-    "change_3m": "+2.25%",
-    "per": "21.39",
-    "pbr": "0.62",
-    "dividend": "1.47%",
-    "upside": "+51.77%",
-    "fair_value": "62000",
-    "current_price": 40850.0,
-    "rsi": 62.38,
+    "name": "IPARK현대산업개발",
+    "code": "294870",
+    "volume": 186477,
+    "change_1m": "-4.89%",
+    "change_3m": "+12.03%",
+    "per": "9.01",
+    "pbr": "0.44",
+    "dividend": "3.14%",
+    "upside": "+35.81%",
+    "fair_value": "30353",
+    "current_price": 22350.0,
+    "rsi": 50.0,
     "risk_flags": [],
     "interest_level": "N/A",
     "interest_score": 0,
@@ -1588,7 +1404,34 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
+  },
+  {
+    "category": "domestic_value",
+    "theme": "국내 숨은 저평가",
+    "name": "서부T&D",
+    "code": "006730",
+    "volume": 336141,
+    "change_1m": "+7.27%",
+    "change_3m": "+19.45%",
+    "per": "9.14",
+    "pbr": "0.68",
+    "dividend": "0.88%",
+    "upside": "+55.15%",
+    "fair_value": "17625",
+    "current_price": 11360.0,
+    "rsi": 49.57,
+    "risk_flags": [],
+    "interest_level": "N/A",
+    "interest_score": 0,
+    "opinion": "4.00 매수",
+    "grades": {
+      "profit": "보통",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "us_theme",
@@ -1602,8 +1445,8 @@
     "per": "N/A",
     "pbr": "16.01",
     "dividend": "N/A",
-    "upside": "-8.21%",
-    "fair_value": "234.19444",
+    "upside": "-7.82%",
+    "fair_value": "235.19444",
     "current_price": 255.14999389648438,
     "rsi": 73.86,
     "risk_flags": [
@@ -1619,7 +1462,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1649,7 +1492,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1679,7 +1522,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1700,14 +1543,14 @@
     "risk_flags": [],
     "interest_level": "강함",
     "interest_score": 5.3,
-    "opinion": "None",
+    "opinion": "Hold",
     "grades": {
       "profit": "최고",
       "health": "최고",
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1735,7 +1578,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1765,7 +1608,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1795,7 +1638,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1826,7 +1669,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1838,10 +1681,10 @@
     "change_1m": "+4.55%",
     "change_3m": "-8.78%",
     "per": "10.96",
-    "pbr": "3.10",
+    "pbr": "3.13",
     "dividend": "127.00%",
-    "upside": "+14.72%",
-    "fair_value": "253.69565",
+    "upside": "+14.62%",
+    "fair_value": "253.47826",
     "current_price": 221.14999389648438,
     "rsi": 61.82,
     "risk_flags": [],
@@ -1854,7 +1697,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1887,7 +1730,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1920,7 +1763,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1928,14 +1771,14 @@
     "name": "SLB Limited",
     "code": "SLB",
     "volume": 19057300,
-    "market_cap": 78748639232.0,
+    "market_cap": 78316560384.0,
     "change_1m": "+3.05%",
     "change_3m": "+1.75%",
     "per": "25.63",
-    "pbr": "2.89",
+    "pbr": "2.88",
     "dividend": "222.00%",
-    "upside": "+17.50%",
-    "fair_value": "62.34483",
+    "upside": "+17.56%",
+    "fair_value": "62.37931",
     "current_price": 53.060001373291016,
     "rsi": 61.07,
     "risk_flags": [],
@@ -1948,7 +1791,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -1962,13 +1805,12 @@
     "per": "21.46",
     "pbr": "13.81",
     "dividend": "238.00%",
-    "upside": "+4.87%",
-    "fair_value": "633.6191",
+    "upside": "+6.84%",
+    "fair_value": "645.4762",
     "current_price": 604.1799926757812,
     "rsi": 84.16,
     "risk_flags": [
-      "과열강함",
-      "상승여력낮음"
+      "과열강함"
     ],
     "interest_level": "강함",
     "interest_score": 5.54,
@@ -1979,7 +1821,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "us_theme",
@@ -1987,14 +1829,14 @@
     "name": "Northrop Grumman Corporation",
     "code": "NOC",
     "volume": 818800,
-    "market_cap": 78339235840.0,
+    "market_cap": 78340046848.0,
     "change_1m": "+9.02%",
     "change_3m": "+2.16%",
     "per": "17.41",
     "pbr": "4.19",
     "dividend": "179.00%",
-    "upside": "+14.55%",
-    "fair_value": "631.6667",
+    "upside": "+14.62%",
+    "fair_value": "632.0833",
     "current_price": 551.4400024414062,
     "rsi": 79.06,
     "risk_flags": [
@@ -2009,7 +1851,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -2023,8 +1865,8 @@
     "per": "25.60",
     "pbr": "2.38",
     "dividend": "197.00%",
-    "upside": "+24.68%",
-    "fair_value": "316.64706",
+    "upside": "+27.44%",
+    "fair_value": "323.66666",
     "current_price": 253.97000122070312,
     "rsi": 68.99,
     "risk_flags": [],
@@ -2037,7 +1879,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -2067,7 +1909,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -2095,7 +1937,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:42"
+    "time": "2026-10-26 20:49"
   },
   {
     "category": "us_theme",
@@ -2125,7 +1967,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -2156,7 +1998,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -2186,7 +2028,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -2200,8 +2042,8 @@
     "per": "27.28",
     "pbr": "20.32",
     "dividend": "229.00%",
-    "upside": "-9.69%",
-    "fair_value": "396.70242",
+    "upside": "-9.55%",
+    "fair_value": "397.3231",
     "current_price": 439.260009765625,
     "rsi": 69.46,
     "risk_flags": [
@@ -2217,7 +2059,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_theme",
@@ -2245,7 +2087,7 @@
       "growth": "우수"
     },
     "is_profitable": "Pass (미국 주도 테마)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_sp",
@@ -2258,8 +2100,8 @@
     "per": "38.55",
     "pbr": "3.51",
     "dividend": "243.00%",
-    "upside": "+14.41%",
-    "fair_value": "118.63808",
+    "upside": "+14.29%",
+    "fair_value": "118.52269",
     "current_price": 103.7,
     "rsi": 62.17,
     "risk_flags": [],
@@ -2272,14 +2114,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_sp",
     "theme": "Healthcare",
     "name": "Align Technology, Inc.",
     "code": "ALGN",
-    "volume": 911573,
+    "volume": 911613,
     "change_1m": "+6.56%",
     "change_3m": "-7.49%",
     "per": "26.87",
@@ -2301,7 +2143,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_sp",
@@ -2311,7 +2153,7 @@
     "volume": 3164029,
     "change_1m": "+7.76%",
     "change_3m": "+5.01%",
-    "per": "19.46",
+    "per": "19.37",
     "pbr": "1.81",
     "dividend": "564.00%",
     "upside": "+9.06%",
@@ -2330,14 +2172,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_sp",
     "theme": "Utilities",
     "name": "American Electric Power Company",
     "code": "AEP",
-    "volume": 2836072,
+    "volume": 2836796,
     "change_1m": "+9.72%",
     "change_3m": "-3.59%",
     "per": "22.48",
@@ -2359,7 +2201,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_sp",
@@ -2370,10 +2212,10 @@
     "change_1m": "+2.57%",
     "change_3m": "-3.67%",
     "per": "19.01",
-    "pbr": "5.89",
+    "pbr": "5.87",
     "dividend": "121.00%",
-    "upside": "+17.97%",
-    "fair_value": "369.5156",
+    "upside": "+17.72%",
+    "fair_value": "368.7156",
     "current_price": 313.22,
     "rsi": 61.43,
     "risk_flags": [],
@@ -2386,7 +2228,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:50"
   },
   {
     "category": "us_sp",
@@ -2415,7 +2257,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:43"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2442,7 +2284,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2471,7 +2313,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2500,7 +2342,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2527,7 +2369,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2538,7 +2380,7 @@
     "change_1m": "+2.98%",
     "change_3m": "-8.33%",
     "per": "26.27",
-    "pbr": "10.15",
+    "pbr": "10.68",
     "dividend": "443.00%",
     "upside": "+17.25%",
     "fair_value": "138.31818",
@@ -2554,7 +2396,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2581,7 +2423,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2610,7 +2452,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2637,7 +2479,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2664,7 +2506,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2691,7 +2533,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2718,14 +2560,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
     "theme": "Consumer Cyclical",
     "name": "Caseys General Stores, Inc.",
     "code": "CASY",
-    "volume": 435299,
+    "volume": 435347,
     "change_1m": "+15.34%",
     "change_3m": "-18.78%",
     "per": "33.68",
@@ -2747,7 +2589,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2774,14 +2616,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
     "theme": "Communication Services",
     "name": "Comcast Corporation",
     "code": "CMCSA",
-    "volume": 31332498,
+    "volume": 31340126,
     "change_1m": "+5.75%",
     "change_3m": "+3.33%",
     "per": "7.18",
@@ -2801,7 +2643,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:51"
   },
   {
     "category": "us_sp",
@@ -2830,14 +2672,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:44"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
     "theme": "Industrials",
     "name": "Copart, Inc.",
     "code": "CPRT",
-    "volume": 10151751,
+    "volume": 10152348,
     "change_1m": "+6.54%",
     "change_3m": "+3.79%",
     "per": "18.71",
@@ -2857,7 +2699,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
@@ -2886,7 +2728,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
@@ -2913,7 +2755,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
@@ -2940,7 +2782,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
@@ -2967,14 +2809,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
     "theme": "Energy",
     "name": "Diamondback Energy, Inc.",
     "code": "FANG",
-    "volume": 1768535,
+    "volume": 1769014,
     "change_1m": "+11.08%",
     "change_3m": "+1.08%",
     "per": "39.95",
@@ -2996,14 +2838,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
     "theme": "Consumer Defensive",
     "name": "Dollar Tree, Inc.",
     "code": "DLTR",
-    "volume": 2420952,
+    "volume": 2421266,
     "change_1m": "+8.01%",
     "change_3m": "+4.03%",
     "per": "15.26",
@@ -3023,7 +2865,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
@@ -3033,7 +2875,7 @@
     "volume": 5126967,
     "change_1m": "+8.16%",
     "change_3m": "-7.37%",
-    "per": "22.64",
+    "per": "22.56",
     "pbr": "2.05",
     "dividend": "410.00%",
     "upside": "+8.38%",
@@ -3052,7 +2894,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_sp",
@@ -3062,11 +2904,11 @@
     "volume": 1701199,
     "change_1m": "+4.03%",
     "change_3m": "-1.22%",
-    "per": "22.82",
-    "pbr": "3.63",
+    "per": "23.24",
+    "pbr": "3.47",
     "dividend": "105.00%",
-    "upside": "+19.82%",
-    "fair_value": "238.6842",
+    "upside": "+19.87%",
+    "fair_value": "238.78947",
     "current_price": 199.2,
     "rsi": 65.86,
     "risk_flags": [],
@@ -3079,14 +2921,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_ndq",
     "theme": "Utilities",
     "name": "American Electric Power Company",
     "code": "AEP",
-    "volume": 2836072,
+    "volume": 2836796,
     "change_1m": "+9.72%",
     "change_3m": "-3.59%",
     "per": "22.48",
@@ -3108,14 +2950,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_ndq",
     "theme": "Communication Services",
     "name": "Comcast Corporation",
     "code": "CMCSA",
-    "volume": 31332498,
+    "volume": 31340126,
     "change_1m": "+5.75%",
     "change_3m": "+3.33%",
     "per": "7.18",
@@ -3135,14 +2977,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_ndq",
     "theme": "Industrials",
     "name": "Copart, Inc.",
     "code": "CPRT",
-    "volume": 10151751,
+    "volume": 10152348,
     "change_1m": "+6.54%",
     "change_3m": "+3.79%",
     "per": "18.71",
@@ -3162,14 +3004,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_ndq",
     "theme": "Energy",
     "name": "Diamondback Energy, Inc.",
     "code": "FANG",
-    "volume": 1768535,
+    "volume": 1769014,
     "change_1m": "+11.08%",
     "change_3m": "+1.08%",
     "per": "39.95",
@@ -3191,14 +3033,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_ndq",
     "theme": "Utilities",
     "name": "Exelon Corporation",
     "code": "EXC",
-    "volume": 5578212,
+    "volume": 5754198,
     "change_1m": "+10.19%",
     "change_3m": "-5.63%",
     "per": "16.33",
@@ -3220,14 +3062,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_ndq",
     "theme": "Healthcare",
     "name": "GE HealthCare Technologies Inc.",
     "code": "GEHC",
-    "volume": 2976013,
+    "volume": 2976197,
     "change_1m": "+7.05%",
     "change_3m": "+18.01%",
     "per": "16.43",
@@ -3249,14 +3091,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:52"
   },
   {
     "category": "us_ndq",
     "theme": "Technology",
     "name": "Microsoft Corporation",
     "code": "MSFT",
-    "volume": 13629072,
+    "volume": 13681067,
     "change_1m": "+3.00%",
     "change_3m": "+37.67%",
     "per": "29.22",
@@ -3276,14 +3118,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_ndq",
     "theme": "Consumer Defensive",
     "name": "Mondelez International, Inc.",
     "code": "MDLZ",
-    "volume": 7407695,
+    "volume": 7420353,
     "change_1m": "+6.95%",
     "change_3m": "+6.35%",
     "per": "23.46",
@@ -3305,14 +3147,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_ndq",
     "theme": "Technology",
     "name": "NXP Semiconductors N.V.",
     "code": "NXPI",
-    "volume": 3271588,
+    "volume": 3271774,
     "change_1m": "-0.59%",
     "change_3m": "-12.35%",
     "per": "20.06",
@@ -3332,14 +3174,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:45"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_ndq",
     "theme": "Technology",
     "name": "QUALCOMM Incorporated",
     "code": "QCOM",
-    "volume": 7220548,
+    "volume": 7255809,
     "change_1m": "-6.17%",
     "change_3m": "+5.93%",
     "per": "20.36",
@@ -3359,14 +3201,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_ndq",
     "theme": "Healthcare",
     "name": "Vertex Pharmaceuticals Incorpor",
     "code": "VRTX",
-    "volume": 832516,
+    "volume": 832628,
     "change_1m": "-0.71%",
     "change_3m": "+9.76%",
     "per": "29.90",
@@ -3386,17 +3228,17 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_ndq",
     "theme": "Utilities",
     "name": "Xcel Energy Inc.",
     "code": "XEL",
-    "volume": 3958504,
+    "volume": 3993613,
     "change_1m": "+12.48%",
     "change_3m": "-3.66%",
-    "per": "21.62",
+    "per": "21.38",
     "pbr": "2.03",
     "dividend": "304.00%",
     "upside": "+13.62%",
@@ -3415,7 +3257,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3428,8 +3270,8 @@
     "per": "38.55",
     "pbr": "3.51",
     "dividend": "243.00%",
-    "upside": "+14.41%",
-    "fair_value": "118.63808",
+    "upside": "+14.29%",
+    "fair_value": "118.52269",
     "current_price": 103.7,
     "rsi": 62.17,
     "risk_flags": [],
@@ -3442,7 +3284,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3453,7 +3295,7 @@
     "change_1m": "+4.26%",
     "change_3m": "-3.40%",
     "per": "18.69",
-    "pbr": "3.21",
+    "pbr": "3.18",
     "dividend": "25.00%",
     "upside": "+16.14%",
     "fair_value": "370.16666",
@@ -3469,7 +3311,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3498,7 +3340,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3525,7 +3367,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3538,8 +3380,8 @@
     "per": "34.38",
     "pbr": "1.28",
     "dividend": "488.00%",
-    "upside": "+17.73%",
-    "fair_value": "78.52778",
+    "upside": "+17.07%",
+    "fair_value": "78.08333",
     "current_price": 66.7,
     "rsi": 54.57,
     "risk_flags": [],
@@ -3552,14 +3394,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
     "theme": "Healthcare",
     "name": "Align Technology, Inc.",
     "code": "ALGN",
-    "volume": 911573,
+    "volume": 911613,
     "change_1m": "+6.56%",
     "change_3m": "-7.49%",
     "per": "26.87",
@@ -3581,7 +3423,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3592,10 +3434,10 @@
     "change_1m": "+2.28%",
     "change_3m": "-8.36%",
     "per": "8.94",
-    "pbr": "0.91",
-    "dividend": "319.00%",
-    "upside": "+21.76%",
-    "fair_value": "47.56111",
+    "pbr": "0.90",
+    "dividend": "358.00%",
+    "upside": "+21.48%",
+    "fair_value": "47.45",
     "current_price": 39.06,
     "rsi": 62.88,
     "risk_flags": [],
@@ -3608,7 +3450,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3618,7 +3460,7 @@
     "volume": 3164029,
     "change_1m": "+7.76%",
     "change_3m": "+5.01%",
-    "per": "19.46",
+    "per": "19.37",
     "pbr": "1.81",
     "dividend": "564.00%",
     "upside": "+9.06%",
@@ -3637,14 +3479,14 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
     "theme": "Technology",
     "name": "Amdocs Limited",
     "code": "DOX",
-    "volume": 879657,
+    "volume": 879660,
     "change_1m": "+10.36%",
     "change_3m": "+21.62%",
     "per": "14.90",
@@ -3666,7 +3508,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3688,21 +3530,21 @@
     ],
     "interest_level": "낮음",
     "interest_score": 0,
-    "opinion": "Buy",
+    "opinion": "None",
     "grades": {
       "profit": "보통",
       "health": "우수",
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
     "theme": "Utilities",
     "name": "American Electric Power Company",
     "code": "AEP",
-    "volume": 2836072,
+    "volume": 2836796,
     "change_1m": "+9.72%",
     "change_3m": "-3.59%",
     "per": "22.48",
@@ -3724,7 +3566,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:53"
   },
   {
     "category": "us_rsl",
@@ -3735,10 +3577,10 @@
     "change_1m": "+2.57%",
     "change_3m": "-3.67%",
     "per": "19.01",
-    "pbr": "5.89",
+    "pbr": "5.87",
     "dividend": "121.00%",
-    "upside": "+17.97%",
-    "fair_value": "369.5156",
+    "upside": "+17.72%",
+    "fair_value": "368.7156",
     "current_price": 313.22,
     "rsi": 61.43,
     "risk_flags": [],
@@ -3751,7 +3593,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -3780,7 +3622,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -3807,7 +3649,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:46"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -3836,7 +3678,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -3865,7 +3707,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -3875,7 +3717,7 @@
     "volume": 354358,
     "change_1m": "+1.69%",
     "change_3m": "-4.05%",
-    "per": "23.14",
+    "per": "22.84",
     "pbr": "3.06",
     "dividend": "152.00%",
     "upside": "+28.21%",
@@ -3892,7 +3734,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -3902,7 +3744,7 @@
     "volume": 432292,
     "change_1m": "+2.08%",
     "change_3m": "+4.84%",
-    "per": "23.46",
+    "per": "23.01",
     "pbr": "8.05",
     "dividend": "89.00%",
     "upside": "+23.46%",
@@ -3919,21 +3761,21 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
     "theme": "Healthcare",
     "name": "Ascendis Pharma A/S",
     "code": "ASND",
-    "volume": 575458,
+    "volume": 575675,
     "change_1m": "+5.79%",
     "change_3m": "-4.13%",
     "per": "18.65",
     "pbr": "9.90",
     "dividend": "N/A",
-    "upside": "+26.41%",
-    "fair_value": "307.6426",
+    "upside": "+25.97%",
+    "fair_value": "306.57904",
     "current_price": 243.37,
     "rsi": 66.57,
     "risk_flags": [],
@@ -3946,7 +3788,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -3973,7 +3815,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4002,7 +3844,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4029,7 +3871,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4058,7 +3900,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4087,17 +3929,17 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
     "theme": "Technology",
     "name": "Bentley Systems, Incorporated",
     "code": "BSY",
-    "volume": 2423072,
+    "volume": 2423149,
     "change_1m": "+26.88%",
     "change_3m": "+26.71%",
-    "per": "42.69",
+    "per": "43.63",
     "pbr": "10.24",
     "dividend": "71.00%",
     "upside": "+12.34%",
@@ -4116,7 +3958,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4143,7 +3985,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4154,7 +3996,7 @@
     "change_1m": "+2.98%",
     "change_3m": "-8.33%",
     "per": "26.27",
-    "pbr": "10.15",
+    "pbr": "10.68",
     "dividend": "443.00%",
     "upside": "+17.25%",
     "fair_value": "138.31818",
@@ -4170,7 +4012,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4197,7 +4039,36 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
+  },
+  {
+    "category": "us_rsl",
+    "theme": "Industrials",
+    "name": "Booz Allen Hamilton Holding Cor",
+    "code": "BAH",
+    "volume": 3568269,
+    "change_1m": "+11.49%",
+    "change_3m": "+8.80%",
+    "per": "12.31",
+    "pbr": "7.50",
+    "dividend": "301.00%",
+    "upside": "+9.22%",
+    "fair_value": "85.53846",
+    "current_price": 78.32,
+    "rsi": 80.02,
+    "risk_flags": [
+      "과열강함"
+    ],
+    "interest_level": "낮음",
+    "interest_score": 0,
+    "opinion": "Hold",
+    "grades": {
+      "profit": "최고",
+      "health": "보통",
+      "growth": "보통"
+    },
+    "is_profitable": "Pass (성장 저평가)",
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "us_rsl",
@@ -4210,8 +4081,8 @@
     "per": "10.53",
     "pbr": "2.10",
     "dividend": "112.00%",
-    "upside": "+22.75%",
-    "fair_value": "88.0",
+    "upside": "+21.97%",
+    "fair_value": "87.4375",
     "current_price": 71.69,
     "rsi": 61.64,
     "risk_flags": [],
@@ -4224,34 +4095,7 @@
       "growth": "보통"
     },
     "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
-  },
-  {
-    "category": "us_rsl",
-    "theme": "Consumer Cyclical",
-    "name": "Bright Horizons Family Solution",
-    "code": "BFAM",
-    "volume": 1069232,
-    "change_1m": "+12.04%",
-    "change_3m": "-5.77%",
-    "per": "22.59",
-    "pbr": "3.73",
-    "dividend": "N/A",
-    "upside": "+21.54%",
-    "fair_value": "86.77778",
-    "current_price": 71.4,
-    "rsi": 68.81,
-    "risk_flags": [],
-    "interest_level": "낮음",
-    "interest_score": 0,
-    "opinion": "Buy",
-    "grades": {
-      "profit": "우수",
-      "health": "보통",
-      "growth": "보통"
-    },
-    "is_profitable": "Pass (성장 저평가)",
-    "time": "2026-10-24 19:47"
+    "time": "2026-10-26 20:54"
   },
   {
     "category": "market_status",
@@ -4262,11 +4106,11 @@
       {
         "market": "코스피",
         "level": "위험",
-        "change_1m": "-20.91%",
-        "change_3m": "-17.84%",
-        "current": 5550.3,
-        "ma20": 6341.74,
-        "ma60": 6539.75,
+        "change_1m": "-22.76%",
+        "change_3m": "-9.20%",
+        "current": 5469.47,
+        "ma20": 6264.32,
+        "ma60": 6518.31,
         "flags": [
           "시장하락",
           "지수60일선이탈",
@@ -4277,11 +4121,11 @@
       {
         "market": "코스닥",
         "level": "위험",
-        "change_1m": "-9.91%",
-        "change_3m": "-1.72%",
-        "current": 751.69,
-        "ma20": 834.72,
-        "ma60": 815.98,
+        "change_1m": "-13.89%",
+        "change_3m": "+3.03%",
+        "current": 727.21,
+        "ma20": 829.36,
+        "ma60": 815.35,
         "flags": [
           "시장하락",
           "지수60일선이탈",
@@ -4326,6 +4170,54 @@
         ]
       }
     ],
-    "time": "2026-10-24 19:41"
+    "time": "2026-10-26 20:55"
+  },
+  {
+    "category": "collection_status",
+    "attempted_at": "2026-10-26 20:47:47",
+    "tabs": {
+      "domestic_theme": {
+        "state": "ok",
+        "last_success": "2026-10-26 20:47:47",
+        "attempted_at": "2026-10-26 20:47:47",
+        "error": ""
+      },
+      "domestic_value": {
+        "state": "ok",
+        "last_success": "2026-10-26 20:47:47",
+        "attempted_at": "2026-10-26 20:47:47",
+        "error": ""
+      },
+      "us_theme": {
+        "state": "ok",
+        "last_success": "2026-10-26 20:47:47",
+        "attempted_at": "2026-10-26 20:47:47",
+        "error": ""
+      },
+      "us_sp": {
+        "state": "ok",
+        "last_success": "2026-10-26 20:47:47",
+        "attempted_at": "2026-10-26 20:47:47",
+        "error": ""
+      },
+      "us_ndq": {
+        "state": "ok",
+        "last_success": "2026-10-26 20:47:47",
+        "attempted_at": "2026-10-26 20:47:47",
+        "error": ""
+      },
+      "us_rsl": {
+        "state": "ok",
+        "last_success": "2026-10-26 20:47:47",
+        "attempted_at": "2026-10-26 20:47:47",
+        "error": ""
+      },
+      "market_status": {
+        "state": "ok",
+        "last_success": "2026-10-26 20:47:47",
+        "attempted_at": "2026-10-26 20:47:47",
+        "error": ""
+      }
+    }
   }
 ]

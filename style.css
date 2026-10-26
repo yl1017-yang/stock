@@ -690,3 +690,14 @@ footer {
   line-height: 1.35;
   color: var(--text-color);
 }
+.collection-status {
+    max-width: 1400px;
+    margin: 16px auto;
+    padding: 0 20px;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.collection-warning { color: #f0b64b; }
+.collection-ok { color: #94a3b8; }
+.collection-status small { display: block; }

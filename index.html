@@ -15,7 +15,7 @@
       <h1>YANG Stock Analyzer</h1>
       <div class="update-info">
         <div class="pulse"></div>
-        Last Scanned: <span id="update-time-val">-</span>
+        마지막 수집 시도: <span id="update-time-val">-</span>
       </div>
       <div class="market-status-line" id="market-status-line" hidden></div>
     </header>
@@ -29,6 +29,8 @@
       <button class="filter-btn" onclick="filterData('US_RSL')">Russell 1000</button>
       <button class="filter-btn" onclick="filterData('HEATMAP')">히트맵</button>
     </div>
+
+    <div id="collection-status" class="collection-status" role="status" hidden></div>
 
     <div id="loading">분석 데이터를 불러오는 중...</div>
     <div id="error">
